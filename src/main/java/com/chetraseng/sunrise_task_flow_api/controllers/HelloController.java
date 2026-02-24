@@ -1,16 +1,14 @@
 package com.chetraseng.sunrise_task_flow_api.controllers;
 
 import com.chetraseng.sunrise_task_flow_api.services.CountService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 public class HelloController {
   private final CountService countService;
-
-  public HelloController(CountService countService) {
-    this.countService = countService;
-  }
 
   @GetMapping("/hello")
   public String getHello() {
