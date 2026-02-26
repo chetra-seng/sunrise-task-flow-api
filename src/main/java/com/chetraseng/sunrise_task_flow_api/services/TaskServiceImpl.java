@@ -23,7 +23,7 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public Optional<TaskResponse> findById(Long id) {
-    return Optional.empty();
+    return taskRepository.findById(id).map(taskMapper::toTaskResponse);
   }
 
   @Override
@@ -32,12 +32,23 @@ public class TaskServiceImpl implements TaskService {
     task.setTitle(title);
     task.setDescription(description);
     Task savedTask = taskRepository.save(task);
-    return taskMapper.toTaskResponse(task);
+    return taskMapper.toTaskResponse(savedTask);
   }
 
   @Override
   public Optional<TaskResponse> update(Long id, String title, String description) {
-    return Optional.empty();
+    Optional<Task> optionalTask = taskRepository.findById(id);
+
+    if (optionalTask.isEmpty()) {
+      return Optional.empty();
+    }
+
+    Task task = optionalTask.get();
+    task.setTitle(title);
+    task.setDescription(description);
+    Task savedTask = taskRepository.save(task);
+    TaskResponse response = taskMapper.toTaskResponse(savedTask);
+    return Optional.of(response);
   }
 
   @Override
