@@ -2,7 +2,7 @@ package com.chetraseng.sunrise_task_flow_api.services;
 
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.mapper.TaskMapper;
-import com.chetraseng.sunrise_task_flow_api.model.Task;
+import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,38 +28,38 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   public TaskResponse create(String title, String description) {
-    Task task = new Task();
+    TaskModel task = new TaskModel();
     task.setTitle(title);
     task.setDescription(description);
-    Task savedTask = taskRepository.save(task);
+    TaskModel savedTask = taskRepository.save(task);
     return taskMapper.toTaskResponse(savedTask);
   }
 
   @Override
   public Optional<TaskResponse> update(Long id, String title, String description) {
-    Optional<Task> optionalTask = taskRepository.findById(id);
+    Optional<TaskModel> optionalTask = taskRepository.findById(id);
 
     if (optionalTask.isEmpty()) {
       return Optional.empty();
     }
 
-    Task task = optionalTask.get();
+    TaskModel task = optionalTask.get();
     task.setTitle(title);
     task.setDescription(description);
-    Task savedTask = taskRepository.save(task);
+    TaskModel savedTask = taskRepository.save(task);
     TaskResponse response = taskMapper.toTaskResponse(savedTask);
     return Optional.of(response);
   }
 
   @Override
   public Optional<TaskResponse> complete(Long id) {
-    Optional<Task> optionalTask = taskRepository.findById(id);
+    Optional<TaskModel> optionalTask = taskRepository.findById(id);
     if (optionalTask.isEmpty()) {
       return Optional.empty();
     }
-    Task task = optionalTask.get();
+    TaskModel task = optionalTask.get();
     task.setCompleted(true);
-    Task savedTask = taskRepository.save(task);
+    TaskModel savedTask = taskRepository.save(task);
     return Optional.of(taskMapper.toTaskResponse(savedTask));
   }
 
