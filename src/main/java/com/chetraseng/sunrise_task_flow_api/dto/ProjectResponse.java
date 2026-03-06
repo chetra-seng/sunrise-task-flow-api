@@ -1,6 +1,5 @@
 package com.chetraseng.sunrise_task_flow_api.dto;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
@@ -10,15 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskResponse {
+public class ProjectResponse {
   private Long id;
-  private String title;
+  private String name;
   private String description;
-  private Boolean completed;
-  private String priority;
-  private String status;
-  private LocalDate dueDate;
   private LocalDateTime createdAt;
-  private Long projectId;
-  private String projectName;
+  private int taskCount;
 }

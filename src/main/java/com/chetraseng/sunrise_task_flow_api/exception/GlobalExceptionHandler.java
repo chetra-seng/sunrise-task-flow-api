@@ -15,4 +15,10 @@ public class GlobalExceptionHandler {
   public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
     return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage(), LocalDateTime.now());
   }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex) {
+    return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), LocalDateTime.now());
+  }
 }

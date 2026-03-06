@@ -6,12 +6,14 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Entity
 @Table(name = "projects")
 public class ProjectModel {
@@ -19,11 +21,17 @@ public class ProjectModel {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false)
   private String name;
 
-  @CreationTimestamp private LocalDateTime createdAt;
+  @Column(columnDefinition = "text")
+  private String description;
 
-  @OneToMany(mappedBy = "project")
+  @CreationTimestamp
+  private LocalDateTime createdAt;
+
+  @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
   @JsonIgnore
-  List<TaskModel> tasks;
+  @Builder.Default
+  List<TaskModel> tasks = new ArrayList<>();
 }
