@@ -1,8 +1,14 @@
 package com.chetraseng.sunrise_task_flow_api.exception;
 
+import com.chetraseng.sunrise_task_flow_api.dto.ErrorField;
 import com.chetraseng.sunrise_task_flow_api.dto.ErrorResponse;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,5 +20,17 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
     return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage(), LocalDateTime.now());
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(
+      MethodArgumentNotValidException ex) {
+    List<ErrorField> errors =
+        ex.getBindingResult().getFieldErrors().stream()
+            .map(e -> new ErrorField(e.getField(), e.getDefaultMessage()))
+            .toList();
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(400, "validation failed", LocalDateTime.now(), errors));
   }
 }
