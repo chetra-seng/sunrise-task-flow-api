@@ -1,25 +1,28 @@
 package com.chetraseng.sunrise_task_flow_api.services;
 
-import com.chetraseng.sunrise_task_flow_api.dto.UserInfoDto;
+import com.chetraseng.sunrise_task_flow_api.dto.request.RegisterRequest;
 import com.chetraseng.sunrise_task_flow_api.mapper.UserMapper;
+
 import com.chetraseng.sunrise_task_flow_api.model.UserModel;
-import java.util.List;
+import com.chetraseng.sunrise_task_flow_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
   private final UserMapper userMapper;
-
-  private List<UserModel> users =
-      List.of(
-          new UserModel(1L, "user1@gmail.com", "user 1", "123456"),
-          new UserModel(2L, "user2@gmail.com", "user 2", "123kjal6"),
-          new UserModel(3L, "user3@gmail.com", "user 3", "hehehemeowmeow"));
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
-  public List<UserInfoDto> getAllUsers() {
-    return users.stream().map(userMapper::toUserDto).toList();
+  public void registerUser(RegisterRequest request) {
+    UserModel user = new UserModel();
+    user.setEmail(request.getEmail());
+    user.setFirstName(request.getFirstName());
+    user.setLastName(request.getLastName());
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
+    userRepository.save(user);
   }
 }

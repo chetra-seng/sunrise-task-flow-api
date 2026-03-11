@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
   private final UserService userService;
 
-  @GetMapping("/users")
-  public List<UserInfoDto> getAllUsers() {
-    return this.userService.getAllUsers();
-  }
+
+
 }

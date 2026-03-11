@@ -9,9 +9,13 @@ import org.hibernate.validator.constraints.Length;
 
 @Data
 public class RegisterRequest {
-    @NotEmpty(message = "name must not be empty")
-    @Length(message = "name must be at least 8", min = 8, max = 100)
-    private String name;
+    @NotEmpty(message = "first name must not be empty")
+    @Length(message = "first name must be at least 8", min = 2, max = 100)
+    private String firstName;
+
+    @NotEmpty(message = "last name must not be empty")
+    @Length(message = "last name must be at least 8", min = 2, max = 100)
+    private String lastName;
 
     @NotEmpty(message = "email must not be empty")
     @Email(message = "email must be valid")
