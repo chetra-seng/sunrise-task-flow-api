@@ -1,6 +1,7 @@
 package com.chetraseng.sunrise_task_flow_api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,8 @@ public class ErrorResponse {
   private final int status;
   private final String message;
   private final LocalDateTime timestamp;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<ErrorField> errors;
 
   public ErrorResponse(int status, String message, LocalDateTime timestamp) {

@@ -33,4 +33,12 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(new ErrorResponse(400, "validation failed", LocalDateTime.now(), errors));
   }
+
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(
+            new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(), ex.getLocalizedMessage(), LocalDateTime.now()));
+  }
 }
