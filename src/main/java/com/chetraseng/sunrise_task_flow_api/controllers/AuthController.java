@@ -2,6 +2,7 @@ package com.chetraseng.sunrise_task_flow_api.controllers;
 
 import com.chetraseng.sunrise_task_flow_api.dto.request.LoginRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.request.RegisterRequest;
+import com.chetraseng.sunrise_task_flow_api.dto.response.TokenResponse;
 import com.chetraseng.sunrise_task_flow_api.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
-    authService.loginUser(request);
-    return ResponseEntity.ok(null);
+  public ResponseEntity<TokenResponse> loginUser(@Valid @RequestBody LoginRequest request) {
+    return ResponseEntity.ok(authService.loginUser(request));
   }
 }
