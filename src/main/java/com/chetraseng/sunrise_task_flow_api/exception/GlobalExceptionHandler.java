@@ -5,6 +5,7 @@ import com.chetraseng.sunrise_task_flow_api.dto.ErrorResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.annotation.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -40,5 +41,13 @@ public class GlobalExceptionHandler {
         .body(
             new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(), ex.getLocalizedMessage(), LocalDateTime.now()));
+  }
+
+  @ExceptionHandler(EmailExistException.class)
+  public ResponseEntity<ErrorResponse> handleEmailExist(EmailExistException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(
+                    new ErrorResponse(
+                            HttpStatus.CONFLICT.value(), ex.getLocalizedMessage(), LocalDateTime.now()));
   }
 }

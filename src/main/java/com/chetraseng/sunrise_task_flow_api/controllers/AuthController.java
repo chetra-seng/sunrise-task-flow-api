@@ -14,14 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping(AuthController.BASE_URL)
 public class AuthController {
+  public static final String BASE_URL = "/api/auth";
+
   private final AuthService authService;
 
   @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
-    authService.registerUser(request);
-    return ResponseEntity.ok(null);
+  public ResponseEntity<TokenResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
+    return ResponseEntity.ok(authService.registerUser(request));
   }
 
   @PostMapping("/login")

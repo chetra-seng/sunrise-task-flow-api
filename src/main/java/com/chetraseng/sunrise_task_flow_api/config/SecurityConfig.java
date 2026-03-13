@@ -1,6 +1,7 @@
 package com.chetraseng.sunrise_task_flow_api.config;
 
-import com.chetraseng.sunrise_task_flow_api.security.CustomUserDetailService;
+import com.chetraseng.sunrise_task_flow_api.controllers.AuthController;
+import com.chetraseng.sunrise_task_flow_api.controllers.DashboardController;
 import com.chetraseng.sunrise_task_flow_api.security.JwtFilter;
 import com.chetraseng.sunrise_task_flow_api.security.LoggingFilter;
 import lombok.RequiredArgsConstructor;
@@ -40,9 +41,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             request ->
                 request
-                    .requestMatchers("/api/auth/**")
+                    .requestMatchers(AuthController.BASE_URL + "/**")
                     .permitAll()
-                    .requestMatchers("/api/dashboard/**")
+                    .requestMatchers(DashboardController.BASE_URL + "/**")
                     .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())

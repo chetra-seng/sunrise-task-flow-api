@@ -34,6 +34,7 @@ public class UserModel implements UserDetails {
   private String lastName;
   private String password;
 
+  @Enumerated(EnumType.STRING)
   private UserRole role;
 
   @CreationTimestamp

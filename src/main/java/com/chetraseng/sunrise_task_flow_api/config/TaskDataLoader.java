@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
 @RequiredArgsConstructor
 public class TaskDataLoader implements CommandLineRunner {
   private final TaskRepository taskRepository;

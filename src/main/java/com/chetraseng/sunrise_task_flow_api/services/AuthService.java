@@ -5,6 +5,6 @@ import com.chetraseng.sunrise_task_flow_api.dto.request.RegisterRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.response.TokenResponse;
 
 public interface AuthService {
-  void registerUser(RegisterRequest request);
+  TokenResponse registerUser(RegisterRequest request);
   TokenResponse loginUser(LoginRequest request);
 }
