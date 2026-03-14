@@ -36,7 +36,7 @@ public class TaskModel {
 
   // TODO: Add 'status' field — TaskStatus enum, default TaskStatus.TODO
   //       Annotations: @Enumerated(EnumType.STRING), @Column(nullable = false)
-
+  private TaskStatus status;
   // TODO: Add 'priority' field — Priority enum, default Priority.MEDIUM
   //       Annotations: @Enumerated(EnumType.STRING), @Column(nullable = false)
 
