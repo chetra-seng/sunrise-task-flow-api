@@ -1,6 +1,7 @@
 package com.chetraseng.sunrise_task_flow_api.mapper;
 
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.model.LabelModel;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -31,10 +32,10 @@ public interface TaskMapper {
     if(labels == null) return List.of();
     return labels.stream().map(LabelModel::getName).toList();
   }
-  @Mapping(target = "labelNames", source = " labels", qualifiedByName = " labelsToNames")
+  @Mapping(target = "labelNames", source = " labels", qualifiedByName = "labelsToNames")
 
 
-  // TODO: Add mapping for 'commentCount'
+    // TODO: Add mapping for 'commentCount'
   //   Hint: @Mapping(target = "commentCount", expression = "java(task.getComments() != null ?
   // task.getComments().size() : 0)")
 }
