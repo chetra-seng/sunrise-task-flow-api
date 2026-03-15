@@ -1,14 +1,14 @@
 package com.chetraseng.sunrise_task_flow_api.controllers;
 
 import com.chetraseng.sunrise_task_flow_api.Services.TaskService;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.*;
 import java.util.List;
 
 // TODO: Add remaining imports as you implement each endpoint
@@ -80,6 +80,10 @@ public class TaskController {
   //       → PaginationResponse<TaskResponse> (200)
   // Hint: Use FilterTaskDto and Pagination as method parameters —
   //       Spring binds query params to them automatically
+    @GetMapping("/api/tasks/filter")
+    public ResponseEntity<PaginationResponse<TaskResponse>> filterTasks(FilterTaskDto filter, Pagination pagination){
+        return ResponseEntity.ok(taskService.filterTasks(filter, pagination));
+    }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 5: Label Management on Tasks

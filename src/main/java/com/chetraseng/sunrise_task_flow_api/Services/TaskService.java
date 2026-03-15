@@ -1,7 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.Services;
 
-import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.dto.*;
 
 import java.util.List;
 
@@ -15,4 +14,5 @@ public interface TaskService {
     TaskResponse update(Long id, TaskRequest request);
     void delete(Long id);
     List<TaskResponse> findOverdueTasks();
+    PaginationResponse<TaskResponse> filterTasks(FilterTaskDto filter, Pagination pagination);
 }

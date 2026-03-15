@@ -12,8 +12,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
-
 @Repository
 public interface TaskRepository
     extends JpaRepository<TaskModel, Long>, JpaSpecificationExecutor<TaskModel> {
@@ -38,7 +36,7 @@ public interface TaskRepository
     List<TaskModel> findByStaus(TaskStatus status);
     List<TaskModel> findByPriority(Priority priority);
     List<TaskModel> findByDueDateBefore(LocalDate date);
-    List<Long> countByStatus(TaskStatus status);
+    long countByStatus(TaskStatus status);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 3: Custom @Query Methods

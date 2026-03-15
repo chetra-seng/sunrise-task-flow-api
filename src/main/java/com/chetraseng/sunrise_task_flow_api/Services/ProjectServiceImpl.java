@@ -10,9 +10,10 @@ import com.chetraseng.sunrise_task_flow_api.model.ProjectModel;
 import com.chetraseng.sunrise_task_flow_api.repository.ProjectRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class ProjectServiceImpl implements ProjectService {
     private ProjectRepository projectRepository;
     private TaskRepository taskRepository;
