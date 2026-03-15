@@ -25,6 +25,32 @@ public class TaskModel {
 
   @CreationTimestamp private LocalDateTime createdAt;
 
+
+
+  public enum Status {
+    TODO,
+    IN_PROGRESS,
+    COMPLETED
+  }
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TaskStatus Status = TaskStatus.TODO;
+
+
+  public enum Priority {
+    LOW,
+    MEDIUM,
+    HIGH,
+    URGENT
+  }
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Priority priority;
+
+
+  private LocalDateTime dueDate;
+
+
   // Owning side
   @ManyToOne
   @JoinColumn(name = "project_id")

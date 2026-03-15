@@ -1,13 +1,32 @@
 package com.chetraseng.sunrise_task_flow_api.repository;
 
+import com.chetraseng.sunrise_task_flow_api.model.Priority;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
+import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface TaskRepository
     extends JpaRepository<TaskModel, Long>, JpaSpecificationExecutor<TaskModel> {
+
+    List<TaskModel> findByProjectId(Long projectId);
+    List<TaskModel>findByStatus(TaskStatus status);
+    List<TaskModel>findByPriority(Priority priority);
+    List<TaskModel>findByDueDate(LocalDateTime dueDate);
+    List<TaskModel>countByStatus(Long status);
+
+
+
+
+
+
+
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Derived Query Methods

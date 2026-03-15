@@ -1,5 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.mapper;
 
+import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import org.mapstruct.Mapper;
@@ -8,9 +9,12 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TaskMapper {
-  @Mapping(target = "projectName", source = "project.name")
-  @Mapping(target = "projectId", source = "project.id")
-  TaskResponse toTaskResponse(TaskModel task);
+//  @Mapping(target = "projectName", source = "project.name")
+//  @Mapping(target = "project_id", source = "project_id")
+
+  TaskModel toEntity(TaskRequest request);
+  TaskResponse toResponse(TaskModel task);
+
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Add mappings for new TaskResponse fields

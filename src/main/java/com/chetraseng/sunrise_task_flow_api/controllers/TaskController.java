@@ -1,6 +1,15 @@
 package com.chetraseng.sunrise_task_flow_api.controllers;
 
+import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
+import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
+import com.chetraseng.sunrise_task_flow_api.service.TaskService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 // TODO: Add remaining imports as you implement each endpoint
 // TODO: Inject your TaskService using constructor injection (@RequiredArgsConstructor)
@@ -8,7 +17,38 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
+    @Autowired
+    private TaskService taskService;
 
+
+
+
+    @GetMapping
+    public List<TaskResponse> findAll() {
+        return this.taskService.findAll();
+    }
+
+
+    @GetMapping("/{id}")
+    public TaskResponse findById(@PathVariable Long id) {
+        return this.taskService.findById(id);
+    }
+
+    @PostMapping
+    public ResponseEntity<TaskResponse> create(@RequestBody TaskRequest request) {
+        return ResponseEntity.status(201).body(this.taskService.create(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskResponse> update(@PathVariable Long id, @RequestBody TaskRequest request) {
+        return ResponseEntity.status(200/404).body(this.taskService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        taskService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Task CRUD
   // ═══════════════════════════════════════════════════════════════════════════
