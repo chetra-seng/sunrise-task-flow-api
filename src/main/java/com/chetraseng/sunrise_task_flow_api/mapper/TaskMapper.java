@@ -5,6 +5,9 @@ import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.Named;
+
+import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TaskMapper {
@@ -22,6 +25,14 @@ public interface TaskMapper {
   //     default List<String> labelsToNames(List<LabelModel> labels) { ... }
   //   Then add: @Mapping(target = "labelNames", source = "labels", qualifiedByName =
   // "labelsToNames")
+
+  @Named("labelsToNames")
+  default List<String> labelsToNames(List<LabelModel>labels){
+    if(labels == null) return List.of();
+    return labels.stream().map(LabelModel::getName).toList();
+  }
+  @Mapping(target = "labelNames", source = " labels", qualifiedByName = " labelsToNames")
+
 
   // TODO: Add mapping for 'commentCount'
   //   Hint: @Mapping(target = "commentCount", expression = "java(task.getComments() != null ?
