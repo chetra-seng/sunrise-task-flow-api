@@ -16,8 +16,12 @@ public interface ProjectRepository extends JpaRepository<ProjectModel, Long> {
   // TODO: Find a project by its name
   // Hint: Return type should be Optional<ProjectModel>
 
+    Optional<ProjectModel> findByName(String name);
+
   // TODO: Check if a project with a given name already exists
   // Hint: Return type should be boolean
+
+   boolean existsByName(String name);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 3: Projection Query (Dashboard)

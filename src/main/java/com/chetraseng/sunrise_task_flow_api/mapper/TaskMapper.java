@@ -14,6 +14,8 @@ import java.util.List;
 public interface TaskMapper {
   @Mapping(target = "projectName", source = "project.name")
   @Mapping(target = "projectId", source = "project.id")
+  @Mapping(target = "labelNames", source = "labels", qualifiedByName = "labelsToNames")
+  @Mapping(target = "commentCount",expression = "java(task.getComments() != null? task.getComments().size() : 0)")
   TaskResponse toTaskResponse(TaskModel task);
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -28,11 +30,11 @@ public interface TaskMapper {
   // "labelsToNames")
 
   @Named("labelsToNames")
-  default List<String> labelsToNames(List<LabelModel>labels){
-    if(labels == null) return List.of();
+  default List<String> labelsToNames(List<LabelModel> labels) {
+    if (labels == null) return List.of();
     return labels.stream().map(LabelModel::getName).toList();
   }
-  @Mapping(target = "labelNames", source = " labels", qualifiedByName = "labelsToNames")
+
 
 
     // TODO: Add mapping for 'commentCount'
