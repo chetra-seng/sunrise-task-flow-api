@@ -2,23 +2,23 @@ package com.chetraseng.sunrise_task_flow_api.controllers;
 
 import com.chetraseng.sunrise_task_flow_api.Services.TaskService;
 import com.chetraseng.sunrise_task_flow_api.dto.*;
+import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.*;
+
 import java.util.List;
 
 // TODO: Add remaining imports as you implement each endpoint
 // TODO: Inject your TaskService using constructor injection (@RequiredArgsConstructor)
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api/task")
 @RequiredArgsConstructor
 public class TaskController {
-    private TaskService taskService;
+    private final TaskService taskService;
 
     // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Task CRUD
@@ -37,19 +37,22 @@ public class TaskController {
   // TODO: DELETE /api/tasks/{id} → no body (204 / 404)
   // Hint: ResponseEntity.noContent().build()
 
-    @GetMapping("/api/task")
+    @GetMapping
     public ResponseEntity<List<TaskResponse>>findAll(){
         return ResponseEntity.ok(taskService.findAll());
     }
-    @GetMapping("api/tasks/{id}")
-    public  ResponseEntity<TaskResponse> findById(Long id){
+
+    @GetMapping("/{id}")
+    public  ResponseEntity<TaskResponse> findById(@PathVariable Long id){
         return ResponseEntity.ok(taskService.findById(id));
     }
-    @PostMapping("api/tasks")
+
+    @PostMapping
     public ResponseEntity<TaskResponse> create(TaskRequest request){
         TaskResponse result = taskService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<TaskResponse>update(@PathVariable Long id, @RequestBody TaskRequest request){
         return ResponseEntity.ok(taskService.update(id, request));
@@ -67,7 +70,7 @@ public class TaskController {
 
   // TODO: GET /api/tasks/overdue → List<TaskResponse> (200)
 
-    @GetMapping("/api/tasks/overdue")
+    @GetMapping("/overdue")
     public ResponseEntity<List<TaskResponse>> findOverdueTasks(){
         return ResponseEntity.ok(taskService.findOverdueTasks());
     }
@@ -80,7 +83,7 @@ public class TaskController {
   //       → PaginationResponse<TaskResponse> (200)
   // Hint: Use FilterTaskDto and Pagination as method parameters —
   //       Spring binds query params to them automatically
-    @GetMapping("/api/tasks/filter")
+    @GetMapping("/filter")
     public ResponseEntity<PaginationResponse<TaskResponse>> filterTasks(FilterTaskDto filter, Pagination pagination){
         return ResponseEntity.ok(taskService.filterTasks(filter, pagination));
     }
@@ -92,7 +95,19 @@ public class TaskController {
   // TODO: PATCH /api/tasks/{id}/status?status= → TaskResponse (200 / 404)
   // Hint: Use @RequestParam TaskStatus status
 
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TaskResponse> updateTaskStatus(@PathVariable Long id, @RequestParam TaskStatus status){
+        return ResponseEntity.ok(taskService.updateStatus(id, status));
+    }
   // TODO: POST /api/tasks/{taskId}/labels/{labelId} → TaskResponse (200 / 404)
 
+    @PostMapping("/{taskId}/labels/{labelId}")
+    public ResponseEntity<TaskResponse> addLabelToTask(@PathVariable Long taskId, @PathVariable Long labelId){
+        return ResponseEntity.ok(taskService.addLabel(taskId,labelId));
+    }
   // TODO: DELETE /api/tasks/{taskId}/labels/{labelId} → TaskResponse (200 / 404)
+    @DeleteMapping("/{taskId}/labels/{labelId}")
+    public ResponseEntity<TaskResponse> removeLabelFromTask(@PathVariable Long taskId, @PathVariable Long labelId){
+        return ResponseEntity.ok(taskService.removeLabel(taskId, labelId));
+    }
 }

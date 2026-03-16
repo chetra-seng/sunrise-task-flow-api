@@ -22,23 +22,28 @@ public class ProjectController {
    public ResponseEntity<List<ProjectResponse>> findAll(){
         return ResponseEntity.ok(projectService.findAll());
     }
+
     @GetMapping("/api/projects/{id}")
     public ResponseEntity<ProjectResponse> findById(@PathVariable Long id){
         return ResponseEntity.ok(projectService.findById(id));
     }
+
     @PostMapping("/api/projects")
     public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest projectRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.create(projectRequest));
     }
+
     @PutMapping("/api/projects/{id}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest){
         return ResponseEntity.ok(projectService.update(id, projectRequest));
     }
+
     @DeleteMapping("/api/projects/{id}")
     public ResponseEntity<Void>  deleteProject(@PathVariable Long id){
         projectService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/api/projects/{id}/tasks")
     public ResponseEntity<List<TaskResponse>> findTasksByProjectId(@PathVariable Long id){
         return ResponseEntity.ok(projectService.findTasksByProjectId(id));

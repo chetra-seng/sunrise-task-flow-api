@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class TaskServiceImpl implements TaskService {
+public abstract class TaskServiceImpl implements TaskService {
 
     private TaskRepository taskRepository;
     private  ProjectRepository projectRepository;

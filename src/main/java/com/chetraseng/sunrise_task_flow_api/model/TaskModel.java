@@ -2,6 +2,8 @@ package com.chetraseng.sunrise_task_flow_api.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -62,6 +64,13 @@ public class TaskModel {
   //           joinColumns = @JoinColumn(name = "task_id"),
   //           inverseJoinColumns = @JoinColumn(name = "label_id")
   //       )
+    @ManyToMany
+    @JoinTable(
+            name = "task_labels",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "label_id")
+    )
+  private List<LabelModel> labels = new ArrayList<>();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 6: Add OneToMany relationship with CommentModel
@@ -69,4 +78,9 @@ public class TaskModel {
 
   // TODO: Add 'comments' field — List<CommentModel>, initialize as new ArrayList<>()
   //       @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+
+  @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<CommentModel> comments = new ArrayList<>();
+
+
 }

@@ -1,5 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.model;
 
+import com.chetraseng.sunrise_task_flow_api.dto.CommentRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
