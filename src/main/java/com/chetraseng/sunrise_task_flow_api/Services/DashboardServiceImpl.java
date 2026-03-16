@@ -13,8 +13,8 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService{
 
-    private TaskRepository taskRepository;
-    private ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
 
     @Override
     public DashboardResponse getSummary() {
@@ -23,7 +23,8 @@ public class DashboardServiceImpl implements DashboardService{
                 .todoCount(taskRepository.countByStatus(TaskStatus.TODO))
                 .inProgressCount(taskRepository.countByStatus(TaskStatus.IN_PROGRESS))
                 .doneCount(taskRepository.countByStatus(TaskStatus.DONE))
-                .overdueCount(taskRepository.findOverdueTasks(LocalDate.now()).size())
-                .projectstats(projectRepository.getProjectStats()).build();
+                .overdueCount((long)taskRepository.findOverdueTasks(LocalDate.now()).size())
+                .projectStats(projectRepository.getProjectStats())
+                .build();
     }
 }

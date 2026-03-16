@@ -1,6 +1,7 @@
 package com.chetraseng.sunrise_task_flow_api.model;
 
 import com.chetraseng.sunrise_task_flow_api.dto.CommentRequest;
+import com.chetraseng.sunrise_task_flow_api.dto.CommentResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentModel {
+public class CommentModel extends CommentResponse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

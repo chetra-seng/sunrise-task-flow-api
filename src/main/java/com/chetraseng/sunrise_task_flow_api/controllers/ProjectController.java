@@ -18,33 +18,33 @@ import java.util.List;
 public class ProjectController {
     private final ProjectService projectService;
 
-    @GetMapping("/api/projects")
+    @GetMapping
    public ResponseEntity<List<ProjectResponse>> findAll(){
         return ResponseEntity.ok(projectService.findAll());
     }
 
-    @GetMapping("/api/projects/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ProjectResponse> findById(@PathVariable Long id){
         return ResponseEntity.ok(projectService.findById(id));
     }
 
-    @PostMapping("/api/projects")
+    @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest projectRequest){
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.create(projectRequest));
     }
 
-    @PutMapping("/api/projects/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest){
         return ResponseEntity.ok(projectService.update(id, projectRequest));
     }
 
-    @DeleteMapping("/api/projects/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void>  deleteProject(@PathVariable Long id){
         projectService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/api/projects/{id}/tasks")
+    @GetMapping("/{id}/tasks")
     public ResponseEntity<List<TaskResponse>> findTasksByProjectId(@PathVariable Long id){
         return ResponseEntity.ok(projectService.findTasksByProjectId(id));
     }

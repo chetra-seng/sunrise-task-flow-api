@@ -33,7 +33,7 @@ public interface TaskRepository
   //   Used by: GET /api/dashboard/summary
 
     List<TaskModel> findByProjectId(Long projectId);
-    List<TaskModel> findByStaus(TaskStatus status);
+    List<TaskModel> findByStatus(TaskStatus status);
     List<TaskModel> findByPriority(Priority priority);
     List<TaskModel> findByDueDateBefore(LocalDate date);
     long countByStatus(TaskStatus status);

@@ -3,10 +3,15 @@ package com.chetraseng.sunrise_task_flow_api.Services;
 import com.chetraseng.sunrise_task_flow_api.dto.*;
 import com.chetraseng.sunrise_task_flow_api.exception.ResourceNotFoundException;
 import com.chetraseng.sunrise_task_flow_api.mapper.TaskMapper;
+import com.chetraseng.sunrise_task_flow_api.model.LabelModel;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
+import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
+import com.chetraseng.sunrise_task_flow_api.repository.LabelRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.ProjectRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
 import com.chetraseng.sunrise_task_flow_api.spec.TaskSpec;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,11 +23,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public abstract class TaskServiceImpl implements TaskService {
+@RequiredArgsConstructor
+public  class TaskServiceImpl implements TaskService {
+    private final LabelRepository labelRepository;
+    private final TaskRepository taskRepository;
+    private  final ProjectRepository projectRepository;
+    private  final TaskMapper taskMapper;
 
-    private TaskRepository taskRepository;
-    private  ProjectRepository projectRepository;
-    private  TaskMapper taskMapper;
     @Override
     public List<TaskResponse> findAll() {
         return taskRepository.findAll()
@@ -39,17 +46,28 @@ public abstract class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponse create(TaskRequest request) {
-        return null;
+        TaskModel task = taskMapper.toModel(request);
+        if (request.getProjectId() != null) {
+            task.setProject(projectRepository.findById(request.getProjectId()).orElse(null));
+        }
+        return taskMapper.toTaskResponse(taskRepository.save(task));
     }
-
     @Override
+    @Transactional
     public TaskResponse update(Long id, TaskRequest request) {
-        return null;
+        TaskModel task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        taskMapper.updateModel(task, request);
+        return taskMapper.toTaskResponse(taskRepository.save(task));
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
-
+        if (!taskRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Task not found with id: " + id);
+        }
+        taskRepository.deleteById(id);
     }
 
     @Override
@@ -89,5 +107,38 @@ public abstract class TaskServiceImpl implements TaskService {
         meta.setTotalPage(page.getTotalPages());
 
         return new PaginationResponse<>(data, meta);
+    }
+
+    @Override
+    @Transactional
+    public TaskResponse updateStatus(Long id, TaskStatus status) {
+        TaskModel task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        task.setStatus(status);
+        return taskMapper.toTaskResponse(taskRepository.save(task));
+    }
+    @Override
+    @Transactional
+    public TaskResponse addLabel(Long taskId, Long labelId) {
+        TaskModel task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        LabelModel label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
+
+        task.getLabels().add(label);
+        return taskMapper.toTaskResponse(taskRepository.save(task));
+    }
+    @Override
+    @Transactional
+    public TaskResponse removeLabel(Long taskId, Long labelId) {
+        TaskModel task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        LabelModel label = labelRepository.findById(labelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
+
+        // Remove the label from the task's collection
+        task.getLabels().remove(label);
+
+        return taskMapper.toTaskResponse(taskRepository.save(task));
     }
 }

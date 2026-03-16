@@ -11,5 +11,5 @@ import java.time.LocalDateTime;
 public class CommentResponse {
     private Long id;
     private String content, author;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 }

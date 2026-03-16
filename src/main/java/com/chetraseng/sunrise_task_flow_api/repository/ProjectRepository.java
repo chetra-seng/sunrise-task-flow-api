@@ -1,6 +1,5 @@
 package com.chetraseng.sunrise_task_flow_api.repository;
 
-import com.chetraseng.sunrise_task_flow_api.dto.ProjectStatsView;
 import com.chetraseng.sunrise_task_flow_api.model.ProjectModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,11 +34,11 @@ public interface ProjectRepository extends JpaRepository<ProjectModel, Long> {
   //   Used by: GET /api/dashboard/summary
   //
   //   First, create the ProjectStatsView interface projection:
-  //   public interface ProjectStatsView {
-  //       String getProjectName();
-  //       long getTaskCount();
-  //       long getDoneCount();
-  //   }
+     public interface ProjectStatsView {
+         String getProjectName();
+         long getTaskCount();
+         long getDoneCount();
+     }
   //
   //   Then write the query (the column aliases must match the interface getter names):
      @Query(nativeQuery = true, value = """
@@ -50,5 +49,6 @@ public interface ProjectRepository extends JpaRepository<ProjectModel, Long> {
          LEFT JOIN tasks t ON t.project_id = p.id
          GROUP BY p.id, p.name
          """)
-     List<ProjectStatsView> getProjectStats();
+     List<com.chetraseng.sunrise_task_flow_api.dto.ProjectStatsView> getProjectStats();
+
 }

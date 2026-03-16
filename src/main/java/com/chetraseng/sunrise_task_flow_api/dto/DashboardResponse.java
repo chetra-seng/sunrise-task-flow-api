@@ -10,5 +10,5 @@ public record DashboardResponse(
         long inProgressCount,
         long doneCount,
         long overdueCount,
-        List<ProjectStatsView> projectstats
+        List<ProjectStatsView> projectStats
         ) {}

@@ -15,7 +15,7 @@ import java.util.List;
 // TODO: Inject your TaskService using constructor injection (@RequiredArgsConstructor)
 
 @RestController
-@RequestMapping("/api/task")
+@RequestMapping("/api/tasks")
 @RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
@@ -48,7 +48,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> create(TaskRequest request){
+    public ResponseEntity<TaskResponse> create(@RequestBody TaskRequest request){
         TaskResponse result = taskService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }

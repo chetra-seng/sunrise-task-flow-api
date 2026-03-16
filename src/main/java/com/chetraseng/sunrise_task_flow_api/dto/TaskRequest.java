@@ -2,9 +2,7 @@ package com.chetraseng.sunrise_task_flow_api.dto;
 
 import com.chetraseng.sunrise_task_flow_api.model.Priority;
 import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -24,7 +22,7 @@ public class TaskRequest {
   // TODO: Add 'status' field — TaskStatus (import from model package)
   // TODO: Add 'dueDate' field — java.time.LocalDate
 
-  private long projectId;
+  private Long projectId;
   private Priority priority;
   private TaskStatus status;
   private LocalDate dueDate;

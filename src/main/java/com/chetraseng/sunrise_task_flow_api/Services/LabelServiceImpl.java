@@ -35,18 +35,23 @@ public class LabelServiceImpl implements LabelService {
     @Override
     @Transactional
     public LabelResponse create(LabelRequest request) {
-        LabelResponse label = labelMapper.toLabelResponse(new LabelModel());
-        return labelMapper.toLabelResponse(labelRepository.save(new LabelModel()));
+        LabelModel label = labelMapper.toModel(request);
+        LabelModel savedLabel = labelRepository.save(label);
+        return labelMapper.toLabelResponse(savedLabel);
     }
 
     @Override
     public LabelResponse update(Long id, LabelRequest request) {
-        return null;
+        LabelModel label = labelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Label not found with id: "+id));
+        labelMapper.updateModel(label,request);
+        return labelMapper.toLabelResponse(labelRepository.save(label));
     }
 
     @Override
     public void delete(Long id) {
-
+        if(!labelRepository.existsById(id)){
+            throw new ResourceNotFoundException("Label not found with ID: "+id);
+        }
     }
 
     @Override

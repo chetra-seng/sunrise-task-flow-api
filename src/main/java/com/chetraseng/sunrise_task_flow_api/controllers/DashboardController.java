@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/dashboard")
 public class DashboardController {
     private final DashboardService dashboardService;
-    @GetMapping("/api/dashboard/summary")
-    public ResponseEntity<DashboardResponse> gerSummary(){
+
+    @GetMapping("/summary")
+    public ResponseEntity<DashboardResponse> getSummary(){
         return ResponseEntity.ok(dashboardService.getSummary());
     }
 }

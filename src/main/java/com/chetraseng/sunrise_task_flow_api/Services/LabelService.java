@@ -5,7 +5,6 @@ import com.chetraseng.sunrise_task_flow_api.dto.LabelResponse;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 
 import java.util.List;
-
 public interface LabelService {
     List<LabelResponse> findAll();
     LabelResponse findById(Long id);

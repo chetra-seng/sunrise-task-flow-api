@@ -13,26 +13,26 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/api")
 public class CommentController {
     private final CommentService commentService;
 
-    @GetMapping("/api/tasks/{taskId}/comments")
-    public ResponseEntity<List<CommentModel>> findByTaskId(@PathVariable Long taskId){
+    @GetMapping("/tasks/{taskId}/comments")
+    public ResponseEntity<List<CommentResponse>> findByTaskId(@PathVariable Long taskId){
         return ResponseEntity.ok(commentService.findByTaskId(taskId));
     }
-    @PostMapping("/api/tasks/{taskId}/comments")
+    @PostMapping("/tasks/{taskId}/comments")
     public ResponseEntity<CommentResponse> create(@PathVariable Long taskId, @RequestBody CommentRequest request){
         CommentResponse created = commentService.create(taskId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PutMapping("/api/comments/{id}")
+    @PutMapping("/comments/{id}")
     public ResponseEntity<CommentResponse> update(@PathVariable Long id, @RequestBody CommentRequest request){
         return ResponseEntity.ok(commentService.update(id,request));
     }
 
-    @DeleteMapping("/api/comments/{id}")
+    @DeleteMapping("/comments/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
         commentService.delete(id);
         return ResponseEntity.noContent().build();

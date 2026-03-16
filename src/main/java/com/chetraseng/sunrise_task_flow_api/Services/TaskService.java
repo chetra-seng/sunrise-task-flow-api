@@ -7,9 +7,6 @@ import java.util.List;
 
 public interface TaskService {
 
-    //default List<TaskResponse> findAll() {
-        //return null;
-   // }
     List<TaskResponse> findAll();
     TaskResponse findById(Long id);
     TaskResponse create(TaskRequest request);

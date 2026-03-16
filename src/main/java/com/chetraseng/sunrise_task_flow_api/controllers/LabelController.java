@@ -44,7 +44,7 @@ public class LabelController {
     }
 
     @GetMapping("/{id}/tasks")
-    public ResponseEntity<List<TaskResponse>> findTaskbyLabelId(@PathVariable Long id){
+    public ResponseEntity<List<TaskResponse>> findTaskByLabelId(@PathVariable Long id){
         return ResponseEntity.ok(labelService.findTasksByLabelId(id));
     }
 }

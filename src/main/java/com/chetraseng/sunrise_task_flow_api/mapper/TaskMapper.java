@@ -1,12 +1,10 @@
 package com.chetraseng.sunrise_task_flow_api.mapper;
 
+import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.model.LabelModel;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -28,6 +26,18 @@ public interface TaskMapper {
   //     default List<String> labelsToNames(List<LabelModel> labels) { ... }
   //   Then add: @Mapping(target = "labelNames", source = "labels", qualifiedByName =
   // "labelsToNames")
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "project", ignore = true)
+  @Mapping(target = "labels", ignore = true)
+  @Mapping(target = "comments", ignore = true)
+  TaskModel toModel(TaskRequest request);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "project", ignore = true)
+  @Mapping(target = "labels", ignore = true)
+  @Mapping(target = "comments", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  void updateModel(@MappingTarget TaskModel task, TaskRequest request);
 
   @Named("labelsToNames")
   default List<String> labelsToNames(List<LabelModel> labels) {

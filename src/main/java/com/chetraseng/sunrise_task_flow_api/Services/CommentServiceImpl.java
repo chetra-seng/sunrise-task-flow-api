@@ -4,7 +4,6 @@ import com.chetraseng.sunrise_task_flow_api.dto.CommentRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.CommentResponse;
 import com.chetraseng.sunrise_task_flow_api.exception.ResourceNotFoundException;
 import com.chetraseng.sunrise_task_flow_api.mapper.CommentMapper;
-import com.chetraseng.sunrise_task_flow_api.model.CommentModel;
 import com.chetraseng.sunrise_task_flow_api.repository.CommentRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
 import jakarta.transaction.Transactional;
@@ -22,7 +21,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    public List<CommentModel> findByTaskId(Long taskId) {
+    public List<CommentResponse> findByTaskId(Long taskId) {
         if(!taskRepository.existsById(taskId)){
             throw new ResourceNotFoundException("Task not found with id: " + taskId);
         }
@@ -32,16 +31,37 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentResponse create(Long taskId, CommentRequest request) {
-        return null;
+        // 1. Find the parent task
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        // 2. Map request to model and link the task
+        var comment = commentMapper.toModel(request);
+        comment.setTask(task);
+
+        // 3. Save and return response
+        return commentMapper.toCommentResponse(commentRepository.save(comment));
     }
 
     @Override
+    @Transactional
     public CommentResponse update(Long id, CommentRequest request) {
-        return null;
+        var comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + id));
+
+        // Update fields using mapper (content, author, etc.)
+        commentMapper.updateModel(comment, request);
+
+        return commentMapper.toCommentResponse(commentRepository.save(comment));
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
-
+        if (!commentRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Comment not found with id: " + id);
+        }
+        commentRepository.deleteById(id);
     }
 }
+
