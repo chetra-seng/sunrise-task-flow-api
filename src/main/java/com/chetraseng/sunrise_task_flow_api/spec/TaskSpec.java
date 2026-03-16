@@ -40,4 +40,23 @@ public class TaskSpec {
   //       var labelJoin = root.join("labels");
   //       return cb.equal(labelJoin.get("id"), labelId);
   //   };
+
+    public static Specification<TaskModel> hasStatus(TaskStatus status) {
+        return (root, query, cb) -> cb.equal(root.get("status"), status);
+    }
+
+    public static Specification<TaskModel> hasPriority(Priority priority) {
+        return (root, query, cb) -> cb.equal(root.get("priority"), priority);
+    }
+
+    public static Specification<TaskModel> dueBefore(LocalDate date) {
+        return (root, query, cb) -> cb.lessThan(root.get("dueDate"), date);
+    }
+
+    public static Specification<TaskModel> hasLabel(Long labelId) {
+        return (root, query, cb) -> {
+            var labelJoin = root.join("labels");
+            return cb.equal(labelJoin.get("id"), labelId);
+        };
+    }
 }

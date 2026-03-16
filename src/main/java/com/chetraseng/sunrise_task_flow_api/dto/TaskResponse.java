@@ -1,7 +1,11 @@
 package com.chetraseng.sunrise_task_flow_api.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.chetraseng.sunrise_task_flow_api.model.Priority;
+import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,4 +30,10 @@ public class TaskResponse {
   // TODO: Add 'dueDate' field — java.time.LocalDate
   // TODO: Add 'labelNames' field — List<String>
   // TODO: Add 'commentCount' field — int
+
+    private TaskStatus status;
+    private Priority priority;
+    private LocalDate dueDate;
+    private List<String> labelNames;
+    private int commentCount;
 }
