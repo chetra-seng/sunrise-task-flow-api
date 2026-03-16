@@ -32,21 +32,18 @@ public class UserModel implements UserDetails {
 
   @Column(name = "last_name", columnDefinition = "varchar(150)")
   private String lastName;
+
   private String password;
 
-  @Enumerated(EnumType.STRING)
-  private UserRole role;
+  @CreationTimestamp private LocalDateTime createdAt;
 
-  @CreationTimestamp
-  private LocalDateTime createdAt;
-
-  @UpdateTimestamp
-  private LocalDateTime updatedAt;
+  @UpdateTimestamp private LocalDateTime updatedAt;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    // ROLE_USER, ROLE_ADMIN
-    return List.of(new SimpleGrantedAuthority("ROLE_" + role.toString()));
+    return roles.stream()
+        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRole().getName()))
+        .toList();
   }
 
   @Override
@@ -57,7 +54,7 @@ public class UserModel implements UserDetails {
   @Override
   public boolean isAccountNonExpired() {
     // Expire after 3 months of creation
-//    return !LocalDateTime.now().isAfter(createdAt.plusMonths(3));
+    //    return !LocalDateTime.now().isAfter(createdAt.plusMonths(3));
     return true;
   }
 
@@ -75,4 +72,7 @@ public class UserModel implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  private List<UserRoleModel> roles;
 }

@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/tasks")
+@RequestMapping(TaskController.BASE_URL)
 public class TaskController {
+  public static final String BASE_URL = "/api/tasks";
+
   private final TaskService taskService;
 
   @GetMapping

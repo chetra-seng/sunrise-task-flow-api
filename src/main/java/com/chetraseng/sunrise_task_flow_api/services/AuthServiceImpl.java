@@ -7,7 +7,6 @@ import com.chetraseng.sunrise_task_flow_api.exception.EmailExistException;
 import com.chetraseng.sunrise_task_flow_api.exception.UnauthorizedException;
 
 import com.chetraseng.sunrise_task_flow_api.model.UserModel;
-import com.chetraseng.sunrise_task_flow_api.model.UserRole;
 import com.chetraseng.sunrise_task_flow_api.repository.UserRepository;
 import com.chetraseng.sunrise_task_flow_api.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +37,6 @@ public class AuthServiceImpl implements AuthService {
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
-    user.setRole(UserRole.USER);
     UserModel savedUser = userRepository.save(user);
 
     String token = jwtService.generateToken(null, savedUser);
