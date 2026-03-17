@@ -17,7 +17,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,7 +43,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponse findById(Long id) {
-        return taskRepository.findById(id).map(taskMapper::toResponse).orElseThrow(() -> new ResourceNotFoundException("Task not found"+ id));
+        return taskRepository.findById(id).map(taskMapper::toResponse).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
     }
 
     @Override

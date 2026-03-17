@@ -9,10 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectResponse {
-
-    private long id;
+    private Long id;
     private String name;
-    private LocalDateTime createdAt;
-    private int TaskCount;
-
+    private int taskCount;
 }

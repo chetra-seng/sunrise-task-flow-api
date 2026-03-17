@@ -65,12 +65,12 @@ public class TaskController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<TaskResponse> updateStatus(@PathVariable Long id, @RequestBody TaskStatus status) {
-            return ResponseEntity.status(200).body(this.taskService.updateStatus(id, status));
+            return ResponseEntity.ok(this.taskService.updateStatus(id, status));
     }
 
     @PostMapping("/{taskId}/labels/{labelId}")
     public ResponseEntity<TaskResponse> addLabel(@PathVariable Long taskId, @PathVariable Long labelId) {
-        return ResponseEntity.status(200).body(this.taskService.addLabel(taskId, labelId));
+        return ResponseEntity.ok(this.taskService.addLabel(taskId, labelId));
     }
 
     // Remove label from task

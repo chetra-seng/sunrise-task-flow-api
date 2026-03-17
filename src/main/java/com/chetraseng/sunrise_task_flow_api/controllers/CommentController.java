@@ -26,12 +26,12 @@ public class CommentController {
     }
     @PostMapping("/{id}/comments")
     public ResponseEntity <CommentResponse> create(@PathVariable Long id, @RequestBody CommentRequest commentRequest) {
-    return ResponseEntity.ok(this.commentService.create(id, commentRequest));
+    return ResponseEntity.status(201).body(this.commentService.create(id, commentRequest));
 
     }
     @PutMapping("/{id}/comments")
     public ResponseEntity <CommentResponse> update(@PathVariable Long id, @RequestBody CommentRequest commentRequest) {
-    return ResponseEntity.ok(this.commentService.update(id, commentRequest));
+    return ResponseEntity.status(200).body(this.commentService.update(id, commentRequest));
     }
     public ResponseEntity<CommentResponse> delete(@PathVariable Long id) {
         commentService.delete(id);
