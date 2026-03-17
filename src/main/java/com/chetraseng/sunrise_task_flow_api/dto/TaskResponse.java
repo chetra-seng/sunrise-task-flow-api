@@ -2,6 +2,7 @@ package com.chetraseng.sunrise_task_flow_api.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.chetraseng.sunrise_task_flow_api.model.Priority;
 import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
@@ -19,10 +20,11 @@ public class TaskResponse {
   private LocalDateTime createdAt;
   private String projectName;
   private Long project_id;
-  private TaskStatus taskStatus;
+  private TaskStatus status;
   private LocalDate dueDate;
   private Priority priority;
-
+  private int commentCount;
+  private List<String> labelNames;
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Add the following fields
   // ═══════════════════════════════════════════════════════════════════════════

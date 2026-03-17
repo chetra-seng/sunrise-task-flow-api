@@ -1,11 +1,11 @@
 package com.chetraseng.sunrise_task_flow_api.controllers;
 
-import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
-import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
+import com.chetraseng.sunrise_task_flow_api.dto.*;
+import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import com.chetraseng.sunrise_task_flow_api.service.TaskService;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,14 +16,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
+@RequiredArgsConstructor
+@Data
+
 public class TaskController {
     @Autowired
-    private TaskService taskService;
+        private TaskService taskService;
 
-
-
-
-    @GetMapping
+        @GetMapping
     public List<TaskResponse> findAll() {
         return this.taskService.findAll();
     }
@@ -41,13 +41,42 @@ public class TaskController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TaskResponse> update(@PathVariable Long id, @RequestBody TaskRequest request) {
-        return ResponseEntity.status(200/404).body(this.taskService.update(id, request));
+        return ResponseEntity.status(200).body(this.taskService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         taskService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/over")
+    public ResponseEntity<List<TaskResponse>> findAllByStatus() {
+        return ResponseEntity.status(200).body(this.taskService.findOverdueTasks());
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<PaginationResponse<TaskResponse>> filterTasks(
+            @ModelAttribute FilterTaskDto filter,
+            @ModelAttribute Pagination pagination) {
+        return ResponseEntity.ok(taskService.filterTasks(filter, pagination));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TaskResponse> updateStatus(@PathVariable Long id, @RequestBody TaskStatus status) {
+            return ResponseEntity.status(200).body(this.taskService.updateStatus(id, status));
+    }
+
+    @PostMapping("/{taskId}/labels/{labelId}")
+    public ResponseEntity<TaskResponse> addLabel(@PathVariable Long taskId, @PathVariable Long labelId) {
+        return ResponseEntity.status(200).body(this.taskService.addLabel(taskId, labelId));
+    }
+
+    // Remove label from task
+    @DeleteMapping("/{taskId}/labels/{labelId}")
+    public ResponseEntity<TaskResponse> removeLabel(@PathVariable Long taskId,@PathVariable Long labelId) {
+        return ResponseEntity.status(200).body(this.taskService.removeLabel(taskId, labelId));
     }
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Task CRUD

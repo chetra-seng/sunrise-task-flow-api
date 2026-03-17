@@ -1,13 +1,33 @@
 package com.chetraseng.sunrise_task_flow_api.repository;
 
+import com.chetraseng.sunrise_task_flow_api.dto.ProjectStatsView;
 import com.chetraseng.sunrise_task_flow_api.model.ProjectModel;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectModel, Long> {
+
+Optional<ProjectModel> findByName(String name);
+boolean existsByName(String name);
+
+    @Query(nativeQuery = true, value = """
+    SELECT p.name          AS projectName,
+           COUNT(t.id)     AS taskCount,
+           SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END) AS doneCount
+    FROM   projects p
+    LEFT JOIN tasks t ON t.project_id = p.id
+    GROUP BY p.id, p.name
+    """)
+    List<ProjectStatsView> getProjectStats();
+
+
+
+
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 2: Derived Query Methods

@@ -1,0 +1,14 @@
+package com.chetraseng.sunrise_task_flow_api.repository;
+
+import com.chetraseng.sunrise_task_flow_api.model.LabelModel;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+@Repository
+public interface LabelRepository extends JpaRepository<LabelModel, Long> {
+    Optional<LabelModel> findByName(String name);
+    boolean existsByName(String name);
+
+
+}

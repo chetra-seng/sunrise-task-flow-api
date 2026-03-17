@@ -5,9 +5,11 @@ import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.scheduling.config.Task;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,14 +18,18 @@ public interface TaskRepository
     extends JpaRepository<TaskModel, Long>, JpaSpecificationExecutor<TaskModel> {
 
     List<TaskModel> findByProjectId(Long projectId);
-    List<TaskModel>findByStatus(TaskStatus status);
+    List<TaskModel> findByStatus(TaskStatus status);
     List<TaskModel>findByPriority(Priority priority);
     List<TaskModel>findByDueDate(LocalDateTime dueDate);
-    List<TaskModel>countByStatus(Long status);
+    long countByStatus(TaskStatus status);
 
 
 
 
+    @Query("SELECT t FROM TaskModel t " +
+            "WHERE t.dueDate < :today " +
+            "AND t.status <> com.chetraseng.sunrise_task_flow_api.model.TaskStatus.DONE")
+    List<TaskModel> findOverdueTasks(@Param("today") LocalDate today);
 
 
 

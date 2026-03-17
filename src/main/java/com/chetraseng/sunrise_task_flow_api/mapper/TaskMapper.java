@@ -16,6 +16,7 @@ public interface TaskMapper {
   TaskResponse toResponse(TaskModel task);
 
 
+
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Add mappings for new TaskResponse fields
   // ═══════════════════════════════════════════════════════════════════════════
