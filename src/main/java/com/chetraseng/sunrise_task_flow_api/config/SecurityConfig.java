@@ -51,7 +51,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             request ->
                 request
-                    .requestMatchers(AuthController.BASE_URL + "/**")
+                    .requestMatchers(AuthController.BASE_URL + "/**", "/v3/api-docs/**", "/swagger-ui/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, TaskController.BASE_URL + "/**")
                     .hasRole("VIEWER")
