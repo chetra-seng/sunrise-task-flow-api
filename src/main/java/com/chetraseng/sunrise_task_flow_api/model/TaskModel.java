@@ -1,5 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -41,6 +42,15 @@ public class TaskModel {
   //       Annotations: @Enumerated(EnumType.STRING), @Column(nullable = false)
 
   // TODO: Add 'dueDate' field — java.time.LocalDate
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private TaskStatus status = TaskStatus.TODO;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Priority priority;
+
+  private LocalDate dueDate;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 5: Add ManyToMany relationship with LabelModel
