@@ -20,7 +20,7 @@ public class TaskController {
   // ═══════════════════════════════════════════════════════════════════════════
   // All methods must return ResponseEntity<T>
 
-    private final TaskService taskService;
+    private final TaskService taskService = null;
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAll() {
 

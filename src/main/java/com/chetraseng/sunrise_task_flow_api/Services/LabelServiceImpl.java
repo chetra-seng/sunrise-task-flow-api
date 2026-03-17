@@ -36,10 +36,6 @@ public class LabelServiceImpl implements LabelService {
         return labelMapper.toLabelResponse(label);
     }
 
-    @Override
-    public LabelResponse create(LabelRequest request) {
-        return null;
-    }
 
     @Override
     public LabelResponse create(LabelRequest request) {

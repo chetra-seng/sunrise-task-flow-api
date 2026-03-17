@@ -1,6 +1,7 @@
 package com.chetraseng.sunrise_task_flow_api.mapper;
 
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.model.LabelModel;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

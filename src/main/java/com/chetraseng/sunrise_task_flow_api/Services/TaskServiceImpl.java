@@ -161,12 +161,6 @@ public class TaskServiceImpl implements TaskService {
         TaskModel task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        LabelModel label = labelRepository.findById(labelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
-
-        if (!task.getLabels().contains(label))
-            task.getLabels().add(label);
-
         TaskModel updated = taskRepository.save(task);
         return taskMapper.toTaskResponse(updated);
     }
@@ -176,10 +170,6 @@ public class TaskServiceImpl implements TaskService {
         TaskModel task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        LabelModel label = labelRepository.findById(labelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
-
-        task.getLabels().remove(label);
 
         TaskModel updated = taskRepository.save(task);
         return taskMapper.toTaskResponse(updated);
