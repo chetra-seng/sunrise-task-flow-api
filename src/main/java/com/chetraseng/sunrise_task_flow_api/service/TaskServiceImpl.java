@@ -60,7 +60,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponse update(Long id, TaskRequest request) {
-        TaskModel task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
+        TaskModel task = taskRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Task not found"));
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
 

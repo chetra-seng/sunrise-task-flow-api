@@ -29,13 +29,17 @@ public class CommentController {
     return ResponseEntity.status(201).body(this.commentService.create(id, commentRequest));
 
     }
-    @PutMapping("/{id}/comments")
-    public ResponseEntity <CommentResponse> update(@PathVariable Long id, @RequestBody CommentRequest commentRequest) {
+
+  @PutMapping("/api/comments/{id}")
+  public ResponseEntity<CommentResponse> update(
+      @PathVariable Long id, @RequestBody CommentRequest commentRequest) {
     return ResponseEntity.status(200).body(this.commentService.update(id, commentRequest));
     }
-    public ResponseEntity<CommentResponse> delete(@PathVariable Long id) {
+
+  @DeleteMapping("/api/comments/{id}")
+  public ResponseEntity<CommentResponse> delete(@PathVariable Long id) {
         commentService.delete(id);
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(200).build();
 
     }
 }

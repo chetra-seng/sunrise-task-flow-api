@@ -33,7 +33,7 @@ public class ProjectController {
 
   @PutMapping("/{id}")
   public ResponseEntity<ProjectResponse> update(@PathVariable Long id, @RequestBody ProjectRequest projectRequest) {
-    return ResponseEntity.status(202).body(this.projectService.update(id, projectRequest));
+    return ResponseEntity.status(200).body(this.projectService.update(id, projectRequest));
     }
 
     @DeleteMapping("/{id}")

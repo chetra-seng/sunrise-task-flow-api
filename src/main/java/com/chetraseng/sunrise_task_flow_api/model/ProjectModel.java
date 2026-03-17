@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.scheduling.config.Task;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +24,6 @@ public class ProjectModel {
 
   @CreationTimestamp private LocalDateTime createdAt;
 
-  @OneToMany(mappedBy = "project")
-  @JsonIgnore
-  List<TaskModel> tasks;
+  @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<TaskModel> tasks;
 }

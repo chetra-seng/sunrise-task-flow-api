@@ -51,9 +51,9 @@ public class TaskController {
     }
 
 
-    @GetMapping("/over")
+    @GetMapping("/overdue")
     public ResponseEntity<List<TaskResponse>> findAllByStatus() {
-        return ResponseEntity.status(200).body(this.taskService.findOverdueTasks());
+        return ResponseEntity.ok(this.taskService.findOverdueTasks());
     }
 
     @GetMapping("/filter")
@@ -63,7 +63,7 @@ public class TaskController {
         return ResponseEntity.ok(taskService.filterTasks(filter, pagination));
     }
 
-    @PatchMapping("/{id}/status")
+    @PatchMapping("/{id}/status?status=")
     public ResponseEntity<TaskResponse> updateStatus(@PathVariable Long id, @RequestBody TaskStatus status) {
             return ResponseEntity.ok(this.taskService.updateStatus(id, status));
     }
@@ -76,7 +76,7 @@ public class TaskController {
     // Remove label from task
     @DeleteMapping("/{taskId}/labels/{labelId}")
     public ResponseEntity<TaskResponse> removeLabel(@PathVariable Long taskId,@PathVariable Long labelId) {
-        return ResponseEntity.status(200).body(this.taskService.removeLabel(taskId, labelId));
+        return ResponseEntity.ok(this.taskService.removeLabel(taskId, labelId));
     }
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 1: Task CRUD

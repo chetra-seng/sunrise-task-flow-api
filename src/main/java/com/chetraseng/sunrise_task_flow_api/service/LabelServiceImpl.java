@@ -59,4 +59,5 @@ public class LabelServiceImpl implements LabelService {
         LabelModel label = labelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Label not found" + id));
         return label.getTasks().stream().map(taskMapper::toResponse).toList();
     }
+
 }
