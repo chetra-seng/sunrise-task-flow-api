@@ -24,7 +24,7 @@ public class TaskRequest {
   // TODO: Add 'status' field — TaskStatus (import from model package)
   // TODO: Add 'dueDate' field — java.time.LocalDate
 
-  private long projectId;
+  private Long projectId;
   private Priority priority;;
   private TaskStatus status;
   private LocalDate dueDate;

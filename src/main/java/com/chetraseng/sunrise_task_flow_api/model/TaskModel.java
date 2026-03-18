@@ -2,6 +2,8 @@ package com.chetraseng.sunrise_task_flow_api.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,17 +33,6 @@ public class TaskModel {
   @JoinColumn(name = "project_id")
   private ProjectModel project;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Exercise 1: Add the following fields
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  // TODO: Add 'status' field — TaskStatus enum, default TaskStatus.TODO
-  //       Annotations: @Enumerated(EnumType.STRING), @Column(nullable = false)
-
-  // TODO: Add 'priority' field — Priority enum, default Priority.MEDIUM
-  //       Annotations: @Enumerated(EnumType.STRING), @Column(nullable = false)
-
-  // TODO: Add 'dueDate' field — java.time.LocalDate
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private TaskStatus status = TaskStatus.TODO;
@@ -56,18 +47,18 @@ public class TaskModel {
   // Exercise 5: Add ManyToMany relationship with LabelModel
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // TODO: Add 'labels' field — List<LabelModel>, initialize as new ArrayList<>()
-  //       @ManyToMany
-  //       @JoinTable(
-  //           name = "task_labels",
-  //           joinColumns = @JoinColumn(name = "task_id"),
-  //           inverseJoinColumns = @JoinColumn(name = "label_id")
-  //       )
+  @ManyToMany
+  @JoinTable(
+          name = "task_labels",
+          joinColumns = @JoinColumn(name = "task_id"),
+          inverseJoinColumns = @JoinColumn(name = "label_id")
+  )
+  private List<LabelModel> labels = new ArrayList<>();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // Exercise 6: Add OneToMany relationship with CommentModel
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // TODO: Add 'comments' field — List<CommentModel>, initialize as new ArrayList<>()
-  //       @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<CommentModel> comments = new ArrayList<>();
 }
