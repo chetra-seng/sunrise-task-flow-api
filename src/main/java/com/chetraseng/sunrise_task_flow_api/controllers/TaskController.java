@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class TaskController {
 
   private final TaskService taskService;
 
+  @SecurityRequirement(name = "Bearer Authentication")
   @GetMapping
   public List<TaskResponse> getAllTask(@RequestParam(required = false) Boolean completed) {
     return taskService.findAll().stream()
@@ -48,6 +50,7 @@ public class TaskController {
         description = "Task not found",
         content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
+  @SecurityRequirement(name = "Bearer Authentication")
   @GetMapping("/{id}")
   public TaskResponse getTaskById(
       @Parameter(name = "id", description = "Task ID", example = "1") @PathVariable Long id) {
@@ -55,12 +58,20 @@ public class TaskController {
   }
 
   @PostMapping
-  public ResponseEntity<TaskResponse> createTask(@RequestBody TaskRequest request) {
+  @SecurityRequirement(name = "Bearer Authentication")
+  public ResponseEntity<TaskResponse> createTask(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Task data including \"title\" and \"description\"",
+              required = true,
+              content = @Content(schema = @Schema(implementation = TaskRequest.class)))
+          @RequestBody
+          TaskRequest request) {
     TaskResponse taskResponse = taskService.create(request.getTitle(), request.getDescription());
     return ResponseEntity.status(HttpStatus.CREATED).body(taskResponse);
   }
 
   @PutMapping("/{id}")
+  @SecurityRequirement(name = "Bearer Authentication")
   public TaskResponse updateTask(
       @Parameter(description = "ID of the task to update", example = "1") @PathVariable Long id,
       @RequestBody TaskRequest request) {
