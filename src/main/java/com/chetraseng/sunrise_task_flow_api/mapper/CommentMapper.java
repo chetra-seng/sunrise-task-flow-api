@@ -11,6 +11,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CommentMapper {
     CommentResponse toCommentResponse(CommentModel comment);
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "task", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

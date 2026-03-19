@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentRequest extends CommentModel {
+public class CommentRequest  {
     private String content, author;
 
 }
