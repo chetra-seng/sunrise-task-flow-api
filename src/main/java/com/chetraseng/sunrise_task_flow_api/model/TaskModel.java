@@ -25,6 +25,8 @@ public class TaskModel {
   private String description;
   private Boolean completed = false;
 
+  private String assignee;
+
   @CreationTimestamp
   private LocalDateTime createdAt;
 
