@@ -2,3 +2,15 @@ databaseChangeLog:
   - include:
       file: db/changelog/changes/001-create-projects-table.sql
       relativeToChangelogFile: false
+  - include:
+      file: db/changelog/changes/002-create-users-table.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/changes/003-create-roles-table.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/changes/004-create-tasks-table.sql
+      relativeToChangelogFile: false
+  - include:
+      file: db/changelog/changes/005-create-user-role-table.sql
+      relativeToChangelogFile: false
