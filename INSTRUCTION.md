@@ -1005,3 +1005,1081 @@ Create `controllers/CommentController.java`. Comments are nested under tasks for
   ]
 }
 ```
+
+---
+
+## Spring Security — Exercises 7–11
+
+**Concepts:** JWT authentication, role-based authorization, input validation, task/comment ownership
+
+---
+
+## Authorization Model
+
+| Role | Access |
+|---|---|
+| (unauthenticated) | `/api/auth/**` only |
+| USER | All `GET` endpoints (except `/api/dashboard/**`) |
+| ADMIN | All endpoints including dashboard + all writes |
+
+---
+
+## How to Extract the Current User from a JWT Token
+
+After `JwtAuthenticationFilter` validates the token and stores the authentication in `SecurityContextHolder`, any service can retrieve the currently logged-in user:
+
+```java
+// Direct approach (in a service or controller):
+Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+UserModel currentUser = (UserModel) auth.getPrincipal();
+String email = currentUser.getEmail();
+```
+
+> **Why this works:** `JwtAuthenticationFilter` creates a `UsernamePasswordAuthenticationToken` using the `UserModel` object (returned by `UserDetailsService`) as the principal. Casting `auth.getPrincipal()` to `UserModel` is safe because `JwtAuthenticationFilter` always stores the full `UserModel`, not just a String.
+
+### SecurityUtils Helper (Exercise 11)
+
+Rather than repeating the cast in every service, you will create a `SecurityUtils` component:
+
+```java
+@Component
+public class SecurityUtils {
+    public Optional<UserModel> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()
+                || !(auth.getPrincipal() instanceof UserModel)) {
+            return Optional.empty();
+        }
+        return Optional.of((UserModel) auth.getPrincipal());
+    }
+
+    public UserModel requireCurrentUser() {
+        return getCurrentUser()
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "Not authenticated"));
+    }
+}
+```
+
+> **Note:** The `instanceof` check is important because `@WithMockUser` in tests stores the username as a `String`, not a `UserModel`. Without this check your tests will throw `ClassCastException`.
+
+Use in a service:
+```java
+@Service
+@RequiredArgsConstructor
+public class TaskServiceImpl implements TaskService {
+    private final SecurityUtils securityUtils;
+
+    @Override
+    public TaskResponse create(TaskRequest request) {
+        UserModel currentUser = securityUtils.requireCurrentUser();
+        TaskModel task = new TaskModel();
+        task.setOwner(currentUser);
+        // ... rest of create logic
+    }
+}
+```
+
+---
+
+## Exercise 7: Security Dependencies + User Foundation
+
+**Concepts:** Spring Security auto-configuration, `UserDetails`, BCrypt
+
+---
+
+### Step 7.1 — Add Maven Dependencies
+
+Add to `pom.xml` inside `<dependencies>`:
+
+```xml
+<!-- Spring Security -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+
+<!-- Spring Security Test (@WithMockUser) -->
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-test</artifactId>
+    <scope>test</scope>
+</dependency>
+
+<!-- JWT (JJWT 0.12.5) -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.13.0</version>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.13.0</version>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.13.0</version>
+    <scope>runtime</scope>
+</dependency>
+
+<!-- Input Validation -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+
+---
+
+### Step 7.2 — Create `Role` Enum
+
+Create `model/Role.java`:
+
+```java
+public enum Role {
+    USER, ADMIN;
+
+    public String getAuthority() {
+        return "ROLE_" + this.name();
+    }
+}
+```
+
+Spring Security's `hasRole("ADMIN")` checks for `ROLE_ADMIN` authority — `getAuthority()` provides that prefix.
+
+---
+
+### Step 7.3 — Create `UserModel` Entity
+
+Create `model/UserModel.java`. It implements `UserDetails` so Spring Security can load and verify it:
+
+```java
+@Entity
+@Table(name = "users")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+public class UserModel implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    private String firstName;
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
+
+    private boolean enabled = true;
+    private boolean accountLocked = false;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.getAuthority()));
+    }
+
+    @Override public String getUsername() { return email; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return !accountLocked; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return enabled; }
+}
+```
+
+> `getUsername()` returns `email` — email is the username identity in this system.
+
+---
+
+### Step 7.4 — Create `UserRepository`
+
+Create `repository/UserRepository.java`:
+
+```java
+@Repository
+public interface UserRepository extends JpaRepository<UserModel, Long> {
+    Optional<UserModel> findByEmail(String email);
+    boolean existsByEmail(String email);
+}
+```
+
+---
+
+### Step 7.5 — Create Auth DTOs
+
+Create in `dto/` package using `@Data @NoArgsConstructor @AllArgsConstructor` (consistent with codebase style):
+
+```java
+@Data @NoArgsConstructor @AllArgsConstructor
+public class RegisterRequest {
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    private String password;
+
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    private String lastName;
+}
+```
+
+```java
+@Data @NoArgsConstructor @AllArgsConstructor
+public class LoginRequest {
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    private String password;
+}
+```
+
+```java
+@Data @NoArgsConstructor @AllArgsConstructor
+public class AuthResponse {
+    private String token;
+    private String refreshToken;
+    private long expiresIn;
+    private String email;
+    private String role;
+}
+```
+
+---
+
+### Step 7.6 — Create `CustomUserDetailsService`
+
+Create `security/CustomUserDetailsService.java`:
+
+```java
+@Service
+@RequiredArgsConstructor
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
+        return userRepository.findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                "User not found: " + username));
+    }
+}
+```
+
+### ✅ Verify
+
+After adding the dependency (Step 7.1) and restarting the app, ALL endpoints will return 401:
+
+```bash
+curl http://localhost:8080/api/tasks
+# → 401 Unauthorized (Spring Security default page or JSON)
+```
+
+This is expected! Spring Security auto-protects all endpoints when the starter is on the classpath.
+
+---
+
+## Exercise 8: JWT Service + Authentication Filter
+
+**Concepts:** JWT generation/validation, `OncePerRequestFilter`, `SecurityContextHolder`
+
+---
+
+### Step 8.1 — Add JWT Configuration
+
+Add to `application.properties` (or `application-dev.properties`):
+
+```properties
+# JWT Configuration
+jwt.secret=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+jwt.expiration=86400000
+jwt.refresh-expiration=604800000
+```
+
+> **Important:** In production, use `jwt.secret=${JWT_SECRET}` and set the secret via environment variable. Never commit real secrets.
+
+---
+
+### Step 8.2 — Create `JwtProperties`
+
+Create `config/JwtProperties.java`:
+
+```java
+@Configuration
+@ConfigurationProperties(prefix = "jwt")
+@Getter @Setter
+public class JwtProperties {
+
+    private String secret;
+    private long expiration = 86400000;       // 24 hours
+    private long refreshExpiration = 604800000; // 7 days
+}
+```
+
+Also add `@EnableConfigurationProperties(JwtProperties.class)` to your main application class.
+
+---
+
+### Step 8.3 — Create `JwtService`
+
+Create `security/JwtService.java`:
+
+```java
+@Service
+@RequiredArgsConstructor
+public class JwtService {
+
+    private final JwtProperties jwtProperties;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getSecret()));
+    }
+
+    public String generateToken(UserDetails userDetails) {
+        return Jwts.builder()
+            .subject(userDetails.getUsername())
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
+            .signWith(getSigningKey())
+            .compact();
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return Jwts.builder()
+            .subject(userDetails.getUsername())
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpiration()))
+            .signWith(getSigningKey())
+            .compact();
+    }
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        return resolver.apply(extractAllClaims(token));
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        return extractUsername(token).equals(userDetails.getUsername())
+            && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
+    }
+}
+```
+
+---
+
+### Step 8.4 — Create `JwtAuthenticationFilter`
+
+Create `security/JwtAuthenticationFilter.java`. This filter runs once per request, extracts the JWT from the `Authorization` header, validates it, and loads the user into the `SecurityContextHolder`:
+
+```java
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        final String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        final String jwt = authHeader.substring(7);
+        final String email = jwtService.extractUsername(jwt);
+
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                var auth = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
+> **Key concept:** The filter does not reject invalid tokens — it simply does nothing, leaving the request unauthenticated. The `SecurityConfig` (Exercise 9) decides which endpoints require authentication.
+
+---
+
+### Step 8.5 — Create `JwtAuthenticationEntryPoint`
+
+Create `security/JwtAuthenticationEntryPoint.java`. This is called when an unauthenticated request hits a protected endpoint — it returns a JSON 401 using the existing `ErrorResponse`:
+
+```java
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper;
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException authException) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        ErrorResponse error = new ErrorResponse(
+            401, "Authentication required", LocalDateTime.now());
+        objectMapper.writeValue(response.getOutputStream(), error);
+    }
+}
+```
+
+---
+
+## Exercise 9: SecurityConfig + Auth Endpoints
+
+**Concepts:** `SecurityFilterChain`, `AuthenticationManager`, `PasswordEncoder`, auth endpoints
+
+---
+
+### Step 9.1 — Create `SecurityConfig`
+
+Create `config/SecurityConfig.java`. Start with a basic configuration that requires authentication for all endpoints except `/api/auth/**`. You will expand the role-based rules in Exercise 11:
+
+```java
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final JwtAuthenticationEntryPoint entryPoint;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(e -> e.authenticationEntryPoint(entryPoint))
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+}
+```
+
+---
+
+### Step 9.2 — Create `AuthService` + `AuthServiceImpl`
+
+Create `services/AuthService.java`:
+
+```java
+public interface AuthService {
+    AuthResponse register(RegisterRequest request);
+    AuthResponse login(LoginRequest request);
+}
+```
+
+Create `services/AuthServiceImpl.java`:
+
+```java
+@Service
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProperties jwtProperties;
+
+    @Override
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Email already exists: " + request.getEmail());
+        }
+        UserModel user = new UserModel();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setRole(Role.USER);
+        userRepository.save(user);
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest request) {
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                request.getEmail(), request.getPassword()));
+        UserModel user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        return buildAuthResponse(user);
+    }
+
+    private AuthResponse buildAuthResponse(UserModel user) {
+        return new AuthResponse(
+            jwtService.generateToken(user),
+            jwtService.generateRefreshToken(user),
+            jwtProperties.getExpiration(),
+            user.getEmail(),
+            user.getRole().name()
+        );
+    }
+}
+```
+
+---
+
+### Step 9.3 — Create `AuthController`
+
+Create `controllers/AuthController.java`:
+
+```java
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+}
+```
+
+---
+
+### Step 9.4 — Fix Existing Tests
+
+Adding Spring Security causes all existing tests to fail with 401. Add `@WithMockUser(roles = "ADMIN")` at the class level to each of the 5 existing test classes:
+
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@WithMockUser(roles = "ADMIN")    // ← add this
+class TaskControllerTest { ... }
+```
+
+Apply to: `TaskControllerTest`, `ProjectControllerTest`, `LabelControllerTest`, `CommentControllerTest`, `DashboardControllerTest`.
+
+> **Why this works:** `@WithMockUser` bypasses the `JwtAuthenticationFilter` entirely and directly injects a mock `Authentication` into `SecurityContextHolder`. The mock user has no database representation — it only exists for the duration of the test.
+
+### ✅ Verify
+
+```bash
+# All 35 original tests should pass again
+./mvnw test
+
+# Auth endpoints
+./mvnw test -Dtest="AuthControllerTest"
+```
+
+---
+
+## Exercise 10: Input Validation
+
+**Concepts:** Bean Validation (`@Valid`, constraint annotations), `MethodArgumentNotValidException`
+
+---
+
+### Step 10.1 — Add Validation to `TaskRequest`
+
+Open `dto/TaskRequest.java` and add constraint annotations:
+
+```java
+@Data @NoArgsConstructor @AllArgsConstructor
+public class TaskRequest {
+
+    @NotBlank(message = "Title is required")
+    @Size(max = 100, message = "Title must be at most 100 characters")
+    private String title;
+
+    @Size(max = 1000, message = "Description must be at most 1000 characters")
+    private String description;
+
+    @Positive(message = "Project ID must be positive")
+    private Long projectId;
+
+    private Priority priority;
+    private TaskStatus status;
+
+    @FutureOrPresent(message = "Due date must be today or in the future")
+    private LocalDate dueDate;
+}
+```
+
+---
+
+### Step 10.2 — Add Validation to Other DTOs
+
+**`dto/ProjectRequest.java`** — add `@NotBlank` on `name`
+
+**`dto/CommentRequest.java`** — add `@NotBlank(message = "Content is required")` on `content`
+
+**`dto/LabelRequest.java`** — add `@NotBlank(message = "Name is required")` on `name`
+
+---
+
+### Step 10.3 — Add `@Valid` to Controllers
+
+In every controller, add `@Valid` to `@RequestBody` parameters:
+
+```java
+// TaskController
+@PostMapping
+public ResponseEntity<TaskResponse> create(@Valid @RequestBody TaskRequest request) { ... }
+
+@PutMapping("/{id}")
+public ResponseEntity<TaskResponse> update(@PathVariable Long id,
+        @Valid @RequestBody TaskRequest request) { ... }
+```
+
+Do the same for `ProjectController`, `CommentController`, and `LabelController`.
+
+---
+
+### Step 10.4 — Extend `ErrorResponse`
+
+Update `dto/ErrorResponse.java` to support field-level validation errors:
+
+```java
+public class ErrorResponse {
+    private final int status;
+    private final String message;
+    private final LocalDateTime timestamp;
+    private List<FieldError> errors;
+
+    // Existing constructor (unchanged)
+    public ErrorResponse(int status, String message, LocalDateTime timestamp) {
+        this.status = status;
+        this.message = message;
+        this.timestamp = timestamp;
+    }
+
+    // New constructor for validation errors
+    public ErrorResponse(int status, String message,
+            LocalDateTime timestamp, List<FieldError> errors) {
+        this(status, message, timestamp);
+        this.errors = errors;
+    }
+}
+```
+
+Also add a `FieldError` record (can be a nested record or a separate file):
+
+```java
+public record FieldError(String field, String message) {}
+```
+
+Add getters for all fields (or annotate with `@Getter` if the class does not already use it).
+
+---
+
+### Step 10.5 — Update `GlobalExceptionHandler`
+
+Add two new handlers to `exception/GlobalExceptionHandler.java` alongside the existing `ResourceNotFoundException` handler:
+
+```java
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    List<ErrorResponse.FieldError> errors = ex.getBindingResult().getFieldErrors().stream()
+        .map(e -> new ErrorResponse.FieldError(e.getField(), e.getDefaultMessage()))
+        .toList();
+    return ResponseEntity.badRequest()
+        .body(new ErrorResponse(400, "Validation failed", LocalDateTime.now(), errors));
+}
+
+@ExceptionHandler(AuthenticationException.class)
+public ResponseEntity<ErrorResponse> handleAuth(AuthenticationException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(new ErrorResponse(401, ex.getMessage(), LocalDateTime.now()));
+}
+```
+
+### ✅ Verify
+
+```bash
+# POST with empty body should return 400 with field errors
+curl -X POST http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{}'
+
+# Expected:
+# { "status": 400, "message": "Validation failed",
+#   "errors": [{"field": "title", "message": "Title is required"}] }
+```
+
+---
+
+## Exercise 11: Role-Based Authorization + Task & Comment Ownership
+
+**Concepts:** Role-based access control, SecurityContext, extracting the current user from token
+
+---
+
+### Step 11.1 — Create `SecurityUtils`
+
+Create `security/SecurityUtils.java`. This component provides a reusable way to retrieve the currently authenticated user from the `SecurityContextHolder`:
+
+```java
+@Component
+public class SecurityUtils {
+
+    /**
+     * Returns the currently authenticated user, or empty if unauthenticated
+     * or using @WithMockUser (which stores a String principal, not UserModel).
+     */
+    public Optional<UserModel> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()
+                || !(auth.getPrincipal() instanceof UserModel)) {
+            return Optional.empty();
+        }
+        return Optional.of((UserModel) auth.getPrincipal());
+    }
+
+    public UserModel requireCurrentUser() {
+        return getCurrentUser()
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "Not authenticated"));
+    }
+
+    public boolean isCurrentUserAdmin() {
+        return getCurrentUser()
+            .map(user -> user.getRole() == Role.ADMIN)
+            .orElse(false);
+    }
+}
+```
+
+---
+
+### Step 11.2 — Add `owner` to `TaskModel`
+
+Add to `model/TaskModel.java`:
+
+```java
+@ManyToOne
+@JoinColumn(name = "owner_id")
+private UserModel owner;
+```
+
+This adds a nullable `owner_id` FK column. Existing seeded tasks will have `null` owner, which is fine.
+
+---
+
+### Step 11.3 — Add `ownerEmail` to `TaskResponse` + Mapper
+
+Add to `dto/TaskResponse.java`:
+```java
+private String ownerEmail;
+```
+
+Update `mapper/TaskMapper.java` — add this mapping to the `toTaskResponse` method:
+```java
+@Mapping(target = "ownerEmail", source = "owner.email")
+```
+
+MapStruct handles `null` safely — if `owner` is null, `ownerEmail` will be null.
+
+---
+
+### Step 11.4 — Set Owner in `TaskServiceImpl`
+
+Inject `SecurityUtils` and set `owner` when creating a task. Open `services/TaskServiceImpl.java`:
+
+```java
+@Service
+@RequiredArgsConstructor
+public class TaskServiceImpl implements TaskService {
+    // ... existing fields ...
+    private final SecurityUtils securityUtils;  // Add this
+
+    @Override
+    public TaskResponse create(TaskRequest request) {
+        TaskModel task = new TaskModel();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        // ... existing field assignments ...
+        securityUtils.getCurrentUser().ifPresent(task::setOwner);  // Set owner
+        return taskMapper.toTaskResponse(taskRepository.save(task));
+    }
+}
+```
+
+> **Why `getCurrentUser()` not `requireCurrentUser()`?** The `ADMIN` role security rule already guarantees the user is authenticated before reaching `create()`. Using `getCurrentUser()` (returning `Optional`) with `ifPresent` is also more resilient when tests use `@WithMockUser` (which stores a String principal, not a `UserModel`).
+
+---
+
+### Step 11.5 — Add `user` to `CommentModel`
+
+Add to `model/CommentModel.java` (alongside the existing `author` String field):
+
+```java
+@ManyToOne
+@JoinColumn(name = "user_id")
+private UserModel user;
+```
+
+The existing `author` String field is kept for backward compatibility with seeded data.
+
+---
+
+### Step 11.6 — Add `authorEmail` to `CommentResponse` + Mapper
+
+Add to `dto/CommentResponse.java`:
+```java
+private String authorEmail;
+```
+
+Update `mapper/CommentMapper.java`:
+```java
+@Mapping(target = "authorEmail", source = "user.email")
+CommentResponse toCommentResponse(CommentModel comment);
+```
+
+---
+
+### Step 11.7 — Set User in `CommentServiceImpl`
+
+Inject `SecurityUtils` and set `user` when creating a comment. Open `services/CommentServiceImpl.java`:
+
+```java
+@Override
+public CommentResponse create(Long taskId, CommentRequest request) {
+    TaskModel task = taskRepository.findById(taskId)
+        .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+    CommentModel comment = new CommentModel();
+    comment.setContent(request.getContent());
+    comment.setAuthor(request.getAuthor());  // Keep existing author field
+    comment.setTask(task);
+    securityUtils.getCurrentUser().ifPresent(comment::setUser);  // Link to user
+    return commentMapper.toCommentResponse(commentRepository.save(comment));
+}
+```
+
+---
+
+### Step 11.8 — Expand `SecurityConfig` with Role-Based Rules
+
+Update `config/SecurityConfig.java` — replace the `.authorizeHttpRequests` block:
+
+```java
+.authorizeHttpRequests(auth -> auth
+    // Public — no authentication required
+    .requestMatchers("/api/auth/**").permitAll()
+
+    // ADMIN only — dashboard
+    .requestMatchers(HttpMethod.GET, "/api/dashboard/**").hasRole("ADMIN")
+
+    // ADMIN only — all mutating operations
+    .requestMatchers(HttpMethod.POST,   "/api/tasks/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.PUT,    "/api/tasks/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.PATCH,  "/api/tasks/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.DELETE, "/api/tasks/**").hasRole("ADMIN")
+
+    .requestMatchers(HttpMethod.POST,   "/api/projects/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.PUT,    "/api/projects/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasRole("ADMIN")
+
+    .requestMatchers(HttpMethod.POST,   "/api/labels/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.PUT,    "/api/labels/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.DELETE, "/api/labels/**").hasRole("ADMIN")
+
+    .requestMatchers(HttpMethod.POST,   "/api/comments/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.PUT,    "/api/comments/**").hasRole("ADMIN")
+    .requestMatchers(HttpMethod.DELETE, "/api/comments/**").hasRole("ADMIN")
+
+    // Authenticated users (USER or ADMIN) — all remaining GETs
+    .anyRequest().authenticated()
+)
+```
+
+> **Order matters:** Rules are evaluated top-to-bottom. More specific rules (`/api/dashboard/**`) must appear before the catch-all `anyRequest()`.
+
+### ✅ Verify
+
+```bash
+./mvnw test -Dtest="SecurityAccessTest"
+./mvnw test  # All tests pass
+```
+
+Manual test with different roles:
+
+```bash
+# Register as USER
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@test.com","password":"password123"}' | jq -r .token)
+
+# USER can view tasks → 200
+curl http://localhost:8080/api/tasks -H "Authorization: Bearer $TOKEN"
+
+# USER cannot create a task → 403
+curl -X POST http://localhost:8080/api/tasks \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Forbidden"}'
+
+# USER cannot view dashboard → 403
+curl http://localhost:8080/api/dashboard/summary -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+## Updated Endpoint Summary (31 endpoints)
+
+| Method | Path | Auth Required | Role |
+|---|---|---|---|
+| POST | `/api/auth/register` | No | — |
+| POST | `/api/auth/login` | No | — |
+| GET | `/api/tasks` | Yes | USER or ADMIN |
+| GET | `/api/tasks/{id}` | Yes | USER or ADMIN |
+| POST | `/api/tasks` | Yes | ADMIN |
+| PUT | `/api/tasks/{id}` | Yes | ADMIN |
+| DELETE | `/api/tasks/{id}` | Yes | ADMIN |
+| GET | `/api/tasks/overdue` | Yes | USER or ADMIN |
+| GET | `/api/tasks/filter` | Yes | USER or ADMIN |
+| PATCH | `/api/tasks/{id}/status` | Yes | ADMIN |
+| POST | `/api/tasks/{taskId}/labels/{labelId}` | Yes | ADMIN |
+| DELETE | `/api/tasks/{taskId}/labels/{labelId}` | Yes | ADMIN |
+| GET | `/api/tasks/{taskId}/comments` | Yes | USER or ADMIN |
+| POST | `/api/tasks/{taskId}/comments` | Yes | ADMIN |
+| GET | `/api/projects` | Yes | USER or ADMIN |
+| GET | `/api/projects/{id}` | Yes | USER or ADMIN |
+| POST | `/api/projects` | Yes | ADMIN |
+| PUT | `/api/projects/{id}` | Yes | ADMIN |
+| DELETE | `/api/projects/{id}` | Yes | ADMIN |
+| GET | `/api/projects/{id}/tasks` | Yes | USER or ADMIN |
+| GET | `/api/labels` | Yes | USER or ADMIN |
+| GET | `/api/labels/{id}` | Yes | USER or ADMIN |
+| POST | `/api/labels` | Yes | ADMIN |
+| PUT | `/api/labels/{id}` | Yes | ADMIN |
+| DELETE | `/api/labels/{id}` | Yes | ADMIN |
+| GET | `/api/labels/{id}/tasks` | Yes | USER or ADMIN |
+| GET | `/api/dashboard/summary` | Yes | ADMIN |
+| PUT | `/api/comments/{id}` | Yes | ADMIN |
+| DELETE | `/api/comments/{id}` | Yes | ADMIN |
+
+---
+
+## New Files to Create (Exercises 7–11)
+
+| File | Exercise |
+|---|---|
+| `model/Role.java` | 7 |
+| `model/UserModel.java` | 7 |
+| `repository/UserRepository.java` | 7 |
+| `dto/RegisterRequest.java` | 7 |
+| `dto/LoginRequest.java` | 7 |
+| `dto/AuthResponse.java` | 7 |
+| `security/CustomUserDetailsService.java` | 7 |
+| `config/JwtProperties.java` | 8 |
+| `security/JwtService.java` | 8 |
+| `security/JwtAuthenticationFilter.java` | 8 |
+| `security/JwtAuthenticationEntryPoint.java` | 8 |
+| `config/SecurityConfig.java` | 9 |
+| `services/AuthService.java` | 9 |
+| `services/AuthServiceImpl.java` | 9 |
+| `controllers/AuthController.java` | 9 |
+| `security/SecurityUtils.java` | 11 |
+
+## Files to Modify (Exercises 7–11)
+
+| File | What to Add | Exercise |
+|---|---|---|
+| `pom.xml` | security, jjwt, validation, spring-security-test deps | 7 |
+| `application.properties` | `jwt.*` config | 8 |
+| `SunriseTaskFlowApiApplication.java` | `@EnableConfigurationProperties(JwtProperties.class)` | 8 |
+| `dto/ErrorResponse.java` | `errors` field + `FieldError` record | 10 |
+| `exception/GlobalExceptionHandler.java` | validation + auth exception handlers | 10 |
+| `dto/TaskRequest.java` | `@NotBlank`, `@Size`, `@Positive`, `@FutureOrPresent` | 10 |
+| `dto/ProjectRequest.java` | `@NotBlank` on `name` | 10 |
+| `dto/CommentRequest.java` | `@NotBlank` on `content` | 10 |
+| `dto/LabelRequest.java` | `@NotBlank` on `name` | 10 |
+| `controllers/TaskController.java` | `@Valid` on all `@RequestBody` | 10 |
+| `controllers/ProjectController.java` | `@Valid` on all `@RequestBody` | 10 |
+| `controllers/CommentController.java` | `@Valid` on all `@RequestBody` | 10 |
+| `controllers/LabelController.java` | `@Valid` on all `@RequestBody` | 10 |
+| `config/SecurityConfig.java` | Role-based `.authorizeHttpRequests` | 11 |
+| `model/TaskModel.java` | `owner` ManyToOne to `UserModel` | 11 |
+| `dto/TaskResponse.java` | `ownerEmail` String | 11 |
+| `mapper/TaskMapper.java` | `@Mapping(target="ownerEmail", source="owner.email")` | 11 |
+| `services/TaskServiceImpl.java` | inject `SecurityUtils`, set owner on create | 11 |
+| `model/CommentModel.java` | `user` ManyToOne to `UserModel` (nullable) | 11 |
+| `dto/CommentResponse.java` | `authorEmail` String | 11 |
+| `mapper/CommentMapper.java` | `@Mapping(target="authorEmail", source="user.email")` | 11 |
+| `services/CommentServiceImpl.java` | inject `SecurityUtils`, set user on create | 11 |
+| `TaskControllerTest.java` | `@WithMockUser(roles = "ADMIN")` at class level | 9 |
+| `ProjectControllerTest.java` | `@WithMockUser(roles = "ADMIN")` at class level | 9 |
+| `LabelControllerTest.java` | `@WithMockUser(roles = "ADMIN")` at class level | 9 |
+| `CommentControllerTest.java` | `@WithMockUser(roles = "ADMIN")` at class level | 9 |
+| `DashboardControllerTest.java` | `@WithMockUser(roles = "ADMIN")` at class level | 9 |
