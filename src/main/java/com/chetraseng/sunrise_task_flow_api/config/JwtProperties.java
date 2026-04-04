@@ -6,6 +6,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 public class JwtProperties {
+    public CharSequence getSecret() {
+        return null;
+    }
+
+    public long getExpiration() {
+        return 0;
+    }
+
     @Configuration
     @ConfigurationProperties(prefix = "jwt")
     @Getter

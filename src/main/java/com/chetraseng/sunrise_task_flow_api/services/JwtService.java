@@ -1,5 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.services;
 
+import com.chetraseng.sunrise_task_flow_api.config.JwtProperties;
 import com.chetraseng.sunrise_task_flow_api.model.UserModel;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -17,9 +18,17 @@ public class JwtService {
         return null;
     }
 
+    public String extractUsername(String token) {
+        return token;
+    }
+
+    public boolean isValid(String token, UserDetails user) {
+        return false;
+    }
+
     @Service
     @RequiredArgsConstructor
-    public class jwtService {
+    public static class jwtService {
 
         private final JwtProperties jwtProperties;
 
