@@ -1,11 +1,16 @@
 package com.chetraseng.sunrise_task_flow_api.dto;
 
-import java.time.LocalDateTime;
+import lombok.Getter;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
 public class ErrorResponse {
   private final int status;
   private final String message;
   private final LocalDateTime timestamp;
+  private List<FieldError> errors;
 
   public ErrorResponse(int status, String message, LocalDateTime timestamp) {
     this.status = status;
@@ -13,15 +18,10 @@ public class ErrorResponse {
     this.timestamp = timestamp;
   }
 
-  public int getStatus() {
-    return status;
+  public ErrorResponse(int status, String message, LocalDateTime timestamp, List<FieldError> errors) {
+    this(status, message, timestamp);
+    this.errors = errors;
   }
 
-  public String getMessage() {
-    return message;
-  }
-
-  public LocalDateTime getTimestamp() {
-    return timestamp;
-  }
+  public record FieldError(String field, String message) {}
 }

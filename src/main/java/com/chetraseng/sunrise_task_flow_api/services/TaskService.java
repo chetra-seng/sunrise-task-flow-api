@@ -1,10 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.services;
 
-import com.chetraseng.sunrise_task_flow_api.dto.FilterTaskDto;
-import com.chetraseng.sunrise_task_flow_api.dto.Pagination;
-import com.chetraseng.sunrise_task_flow_api.dto.PaginationResponse;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.dto.*;
 import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 
 import java.util.List;

@@ -1,10 +1,6 @@
 package com.chetraseng.sunrise_task_flow_api.services;
 
-import com.chetraseng.sunrise_task_flow_api.dto.FilterTaskDto;
-import com.chetraseng.sunrise_task_flow_api.dto.Pagination;
-import com.chetraseng.sunrise_task_flow_api.dto.PaginationResponse;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
-import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
+import com.chetraseng.sunrise_task_flow_api.dto.*;
 import com.chetraseng.sunrise_task_flow_api.exception.ResourceNotFoundException;
 import com.chetraseng.sunrise_task_flow_api.mapper.TaskMapper;
 import com.chetraseng.sunrise_task_flow_api.model.LabelModel;
@@ -14,6 +10,7 @@ import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import com.chetraseng.sunrise_task_flow_api.repository.LabelRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.ProjectRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
+import com.chetraseng.sunrise_task_flow_api.security.SecurityUtils;
 import com.chetraseng.sunrise_task_flow_api.spec.TaskSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,7 +31,7 @@ public class TaskServiceImpl implements TaskService {
   private final ProjectRepository projectRepository;
   private final LabelRepository labelRepository;
   private final TaskMapper taskMapper;
-
+  private final SecurityUtils securityUtils;
   @Override
   public List<TaskResponse> findAll() {
     return taskRepository.findAll().stream().map(taskMapper::toTaskResponse).toList();
@@ -66,7 +63,10 @@ public class TaskServiceImpl implements TaskService {
                       new ResourceNotFoundException(
                           "Project not found: " + request.getProjectId()));
       task.setProject(project);
+
     }
+    securityUtils.getCurrentUser().ifPresent(task::setOwner);
+
     return taskMapper.toTaskResponse(taskRepository.save(task));
   }
 

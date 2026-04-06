@@ -1,7 +1,10 @@
 package com.chetraseng.sunrise_task_flow_api.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -52,4 +55,7 @@ public class TaskModel {
 
   @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CommentModel> comments = new ArrayList<>();
+  @ManyToOne
+  @JoinColumn(name = "owner_id")
+  private UserModel owner;
 }

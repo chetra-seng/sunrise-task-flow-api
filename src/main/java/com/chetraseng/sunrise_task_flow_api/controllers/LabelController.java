@@ -4,6 +4,7 @@ import com.chetraseng.sunrise_task_flow_api.dto.LabelRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.LabelResponse;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.services.LabelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +30,13 @@ public class LabelController {
   }
 
   @PostMapping
-  public ResponseEntity<LabelResponse> create(@RequestBody LabelRequest request) {
+  public ResponseEntity<LabelResponse> create(@Valid @RequestBody LabelRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(labelService.create(request));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<LabelResponse> update(
-      @PathVariable Long id, @RequestBody LabelRequest request) {
+  public ResponseEntity<LabelResponse> update(@PathVariable Long id,
+                                              @Valid @RequestBody LabelRequest request) {
     return ResponseEntity.ok(labelService.update(id, request));
   }
 

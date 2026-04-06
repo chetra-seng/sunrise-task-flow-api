@@ -8,6 +8,7 @@ import com.chetraseng.sunrise_task_flow_api.model.CommentModel;
 import com.chetraseng.sunrise_task_flow_api.model.TaskModel;
 import com.chetraseng.sunrise_task_flow_api.repository.CommentRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
+import com.chetraseng.sunrise_task_flow_api.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class CommentServiceImpl implements CommentService {
   private final CommentRepository commentRepository;
   private final TaskRepository taskRepository;
   private final CommentMapper commentMapper;
+  private final SecurityUtils securityUtils;
 
   @Override
   public List<CommentResponse> findByTaskId(Long taskId) {
@@ -52,6 +54,8 @@ public class CommentServiceImpl implements CommentService {
             .orElseThrow(() -> new ResourceNotFoundException("Comment not found: " + id));
     comment.setContent(request.getContent());
     comment.setAuthor(request.getAuthor());
+    securityUtils.getCurrentUser().ifPresent(comment::setUser);
+
     return commentMapper.toCommentResponse(commentRepository.save(comment));
   }
 

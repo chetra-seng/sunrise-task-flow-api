@@ -4,6 +4,7 @@ import com.chetraseng.sunrise_task_flow_api.dto.ProjectRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.ProjectResponse;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.services.ProjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +30,13 @@ public class ProjectController {
   }
 
   @PostMapping
-  public ResponseEntity<ProjectResponse> create(@RequestBody ProjectRequest request) {
+  public ResponseEntity<ProjectResponse> create(@Valid @RequestBody ProjectRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(projectService.create(request));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ProjectResponse> update(
-      @PathVariable Long id, @RequestBody ProjectRequest request) {
+  public ResponseEntity<ProjectResponse> update(@PathVariable Long id,
+                                                @Valid @RequestBody ProjectRequest request) {
     return ResponseEntity.ok(projectService.update(id, request));
   }
 

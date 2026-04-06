@@ -25,4 +25,5 @@ public class TaskResponse {
   private LocalDate dueDate;
   private List<String> labelNames;
   private int commentCount;
+  private String ownerEmail;
 }

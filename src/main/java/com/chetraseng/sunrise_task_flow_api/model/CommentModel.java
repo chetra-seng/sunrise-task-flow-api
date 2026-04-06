@@ -1,7 +1,10 @@
 package com.chetraseng.sunrise_task_flow_api.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -30,4 +33,7 @@ public class CommentModel {
   @ManyToOne
   @JoinColumn(name = "task_id", nullable = false)
   private TaskModel task;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private UserModel user;
 }
