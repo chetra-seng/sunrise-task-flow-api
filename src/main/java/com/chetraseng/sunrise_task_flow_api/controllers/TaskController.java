@@ -7,6 +7,7 @@ import com.chetraseng.sunrise_task_flow_api.dto.TaskRequest;
 import com.chetraseng.sunrise_task_flow_api.dto.TaskResponse;
 import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import com.chetraseng.sunrise_task_flow_api.services.TaskService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,4 +77,6 @@ public class TaskController {
       @PathVariable Long taskId, @PathVariable Long labelId) {
     return ResponseEntity.ok(taskService.removeLabel(taskId, labelId));
   }
+
+
 }

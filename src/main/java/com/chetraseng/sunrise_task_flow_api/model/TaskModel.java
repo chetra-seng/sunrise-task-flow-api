@@ -33,6 +33,10 @@ public class TaskModel {
   @JoinColumn(name = "project_id")
   private ProjectModel project;
 
+  @ManyToOne
+  @JoinColumn(name = "owner_id")
+  private UserModel owner;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private TaskStatus status = TaskStatus.TODO;

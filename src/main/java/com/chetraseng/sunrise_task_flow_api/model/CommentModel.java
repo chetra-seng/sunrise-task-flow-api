@@ -30,4 +30,9 @@ public class CommentModel {
   @ManyToOne
   @JoinColumn(name = "task_id", nullable = false)
   private TaskModel task;
+
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private UserModel user;
+
 }

@@ -14,6 +14,7 @@ import com.chetraseng.sunrise_task_flow_api.model.TaskStatus;
 import com.chetraseng.sunrise_task_flow_api.repository.LabelRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.ProjectRepository;
 import com.chetraseng.sunrise_task_flow_api.repository.TaskRepository;
+import com.chetraseng.sunrise_task_flow_api.security.SecurityUtils;
 import com.chetraseng.sunrise_task_flow_api.spec.TaskSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,11 +35,15 @@ public class TaskServiceImpl implements TaskService {
   private final ProjectRepository projectRepository;
   private final LabelRepository labelRepository;
   private final TaskMapper taskMapper;
+  private final SecurityUtils securityUtils;
+
 
   @Override
   public List<TaskResponse> findAll() {
     return taskRepository.findAll().stream().map(taskMapper::toTaskResponse).toList();
   }
+
+
 
   @Override
   public TaskResponse findById(Long id) {
@@ -109,13 +114,15 @@ public class TaskServiceImpl implements TaskService {
     if (filter.getPriority() != null) spec = spec.and(TaskSpec.hasPriority(filter.getPriority()));
     if (filter.getDueBefore() != null) spec = spec.and(TaskSpec.dueBefore(filter.getDueBefore()));
     if (filter.getLabelId() != null) spec = spec.and(TaskSpec.hasLabel(filter.getLabelId()));
-
     Pageable pageable =
         PageRequest.of(pagination.getPage(), pagination.getSize(), Sort.by("id").descending());
     Page<TaskModel> page = taskRepository.findAll(spec, pageable);
 
     List<TaskResponse> data =
         page.getContent().stream().map(taskMapper::toTaskResponse).toList();
+
+    securityUtils.getCurrentUser()
+            .ifPresent(user -> page.getContent().forEach(task -> task.setOwner(user)));
 
     Pagination meta = new Pagination();
     meta.setPage(pagination.getPage());
@@ -163,4 +170,5 @@ public class TaskServiceImpl implements TaskService {
     task.getLabels().remove(label);
     return taskMapper.toTaskResponse(taskRepository.save(task));
   }
+
 }
